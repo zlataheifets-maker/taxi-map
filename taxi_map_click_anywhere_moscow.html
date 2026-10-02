@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TaxiMap</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{
+  --bg:#080c0a;--panel:#0f1512;--panel2:#151c18;--line:#29332e;
+  --text:#f5f8f6;--muted:#96a29c;--green:#49ed8d;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;height:100%;background:#050705;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif
+}
+body{display:grid;place-items:center;overflow:hidden}
+.app{
+  position:relative;width:min(440px,100vw);height:min(920px,100vh);overflow:hidden;
+  border-radius:34px;background:var(--bg);box-shadow:0 0 0 1px #2a312d,0 30px 100px #000a
+}
+@media(max-width:520px){.app{width:100vw;height:100vh;border-radius:0}}
+
+#map{position:absolute;inset:0 0 255px 0}
+.leaflet-control-zoom{display:none!important}
+.leaflet-control-attribution{
+  font-size:8px!important;background:#0b100edc!important;color:#8a9690!important
+}
+.leaflet-control-attribution a{color:#b7c1bb!important}
+
+.top{position:absolute;z-index:1000;top:18px;left:13px;right:13px}
+.search{
+  background:#0e1412f1;border:1px solid #29332e;border-radius:16px;padding:8px;
+  backdrop-filter:blur(18px);box-shadow:0 12px 35px #0008
+}
+.routeRow{display:grid;grid-template-columns:16px 1fr;gap:8px;align-items:center}
+.routeRow+.routeRow{margin-top:5px}
+
+.pointSearchWrap{position:relative;min-width:0}
+.pointSearchInput{
+  width:100%;
+  border:1px solid #2d3732;
+  background:#151b18;
+  color:#fff;
+  border-radius:13px;
+  padding:9px 11px;
+  outline:none;
+  font-size:13px;
+}
+.pointSearchInput::placeholder{color:#7f8b85}
+.pointSearchInput:focus{
+  border-color:#49ed8d;
+  box-shadow:0 0 0 1px #49ed8d33;
+}
+.pointResults{
+  display:none;
+  position:absolute;
+  z-index:3500;
+  top:calc(100% + 6px);
+  left:0;
+  right:0;
+  max-height:245px;
+  overflow:auto;
+  background:#101613;
+  border:1px solid #303a35;
+  border-radius:13px;
+  box-shadow:0 14px 34px #000b;
+  padding:5px;
+}
+.pointResults.open{display:block}
+.pointResult{
+  padding:9px 10px;
+  border-radius:9px;
+  cursor:pointer;
+}
+.pointResult:hover,.pointResult.active{background:#1b2721}
+.pointResult strong{
+  display:block;
+  font-size:12px;
+  font-weight:750;
+  color:#fff;
+}
+.pointResult span{
+  display:block;
+  margin-top:2px;
+  font-size:9px;
+  color:#91a098;
+}
+.pointResultsEmpty{
+  padding:11px 10px;
+  font-size:11px;
+  color:#91a098;
+}
+.pointResultsCount{
+  padding:7px 10px 6px;
+  font-size:10px;
+  color:#7f8b85;
+  border-bottom:1px solid #25302a;
+  margin-bottom:4px;
+}
+
+.dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--green)}
+.dot.end{border-color:#aab4af}
+select{
+  width:100%;border:1px solid #2d3732;background:#151b18;color:#fff;border-radius:13px;
+  padding:7px 9px;outline:none;font-size:12.5px
+}
+.actions{display:flex;gap:7px;margin-top:6px}
+.btn{
+  border:1px solid #303a35;background:#141a17;color:#fff;border-radius:13px;
+  padding:7px 10px;cursor:pointer;font-size:12px
+}
+.btn.green{flex:1;background:var(--green);color:#061109;border-color:var(--green);font-weight:800}
+.chips{display:flex;gap:6px;margin-top:6px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;border:1px solid #303a35;background:#0f1512eb;color:#fff;
+  border-radius:16px;padding:6px 9px;font-size:11px;cursor:pointer
+}
+.chip.on{background:var(--green);color:#07120b;border-color:var(--green);font-weight:800}
+
+.zoom{position:absolute;z-index:1000;right:13px;bottom:275px;display:flex;flex-direction:column;gap:9px}
+.fab{
+  width:46px;height:46px;border-radius:50%;border:1px solid #2c3630;background:#0f1512ef;color:white;
+  font-size:20px;cursor:pointer;box-shadow:0 7px 22px #0008
+}
+.hint{
+  position:absolute;z-index:950;left:13px;bottom:274px;background:#0d1310db;color:#b8c3bd;
+  border:1px solid #29332e;padding:7px 9px;border-radius:10px;font-size:10px
+}
+
+.sheet{
+  position:absolute;z-index:1002;left:0;right:0;bottom:0;min-height:255px;
+  background:linear-gradient(180deg,#101613fa,#0a0f0c);border-radius:27px 27px 0 0;
+  border-top:1px solid #28322d;box-shadow:0 -18px 60px #000a;padding:10px 14px 18px
+}
+.handle{width:44px;height:5px;border-radius:3px;background:#59635d;margin:0 auto 11px}
+.summary{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.summary h3{margin:0 0 4px;font-size:17px}
+.summary p{margin:0;color:var(--muted);font-size:12px;line-height:1.25}
+.stats{text-align:right}
+.stats strong{display:block;font-size:18px}
+.stats span{font-size:11px;color:#cad3ce}
+.cards{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-top:12px}
+.cards::-webkit-scrollbar{display:none}
+.card{
+  min-width:103px;border:1px solid #2a342f;background:#151c18;border-radius:14px;padding:10px;cursor:pointer
+}
+.card.active{border-color:var(--green);box-shadow:0 0 0 1px #49ed8d38}
+.card .walk{font-size:11px;color:#c2ccc6}
+.card .price{font-size:18px;font-weight:900;margin:4px 0}
+.card .eta{font-size:11px;color:var(--muted)}
+.note{margin-top:8px;color:#7f8b85;font-size:9px;line-height:1.3}
+
+.savings{
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 12px;
+  border:1px solid #22623d;
+  border-radius:14px;
+  background:linear-gradient(90deg,#12331f,#123a24);
+  cursor:pointer;
+}
+.savingsIcon{
+  width:34px;height:34px;flex:0 0 34px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  background:#17472b;
+  color:var(--green);
+  font-size:19px;
+}
+.savingsText{min-width:0;flex:1}
+.savingsText strong{display:block;font-size:13px;margin-bottom:2px}
+.savingsText span{display:block;color:#b7c6be;font-size:10px;line-height:1.25}
+.savingsArrow{font-size:22px;color:#d6dfda}
+
+.taxiLabel{
+  background:#101613;border:1.5px solid #59665f;color:#fff;border-radius:13px;
+  padding:6px 8px;min-width:78px;text-align:center;box-shadow:0 6px 18px #0009
+}
+.taxiLabel.best{
+  border-color:var(--green);box-shadow:0 0 0 2px #49ed8d32,0 6px 18px #0009
+}
+.taxiLabel b{font-size:13px}
+.taxiLabel small{display:block;color:#c3ccc7;font-size:9px;margin-top:1px}
+
+.pointLabel{
+  background:#101613;border:1px solid #3a463f;color:#fff;border-radius:11px;
+  padding:5px 8px;white-space:nowrap;box-shadow:0 5px 16px #0008;font-size:10px
+}
+.pointLabel.start{border-color:var(--green)}
+.pointLabel.end{border-color:#d0d7d3}
+
+.filters{
+  position:absolute;z-index:2200;inset:0;background:#0a0f0c;transform:translateY(100%);
+  transition:.25s;padding:44px 16px 22px;overflow:auto
+}
+.filters.open{transform:translateY(0)}
+.fhead{display:flex;align-items:center;justify-content:space-between}
+.fhead h2{margin:0}
+.close{
+  width:38px;height:38px;border-radius:50%;border:1px solid #2d3732;background:#151b18;color:#fff;
+  font-size:20px;cursor:pointer
+}
+.section{padding:15px 0;border-bottom:1px solid #222a26}
+.section h4{margin:0 0 10px}
+.segs{display:flex;gap:7px;flex-wrap:wrap}
+.segs button{
+  border:1px solid #303a35;background:#131916;color:#fff;border-radius:18px;padding:8px 10px
+}
+.segs button.on{
+  background:var(--green);color:#07120b;border-color:var(--green);font-weight:800
+}
+.toggleRow{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+.toggle{width:46px;height:27px;border-radius:14px;background:#303934;padding:3px}
+.toggle i{display:block;width:21px;height:21px;border-radius:50%;background:white;transition:.2s}
+.toggle.on{background:var(--green)}
+.toggle.on i{transform:translateX(19px)}
+
+.loader{
+  display:none;position:absolute;z-index:2300;inset:0;background:#050806aa;
+  backdrop-filter:blur(4px);place-items:center
+}
+.loader.show{display:grid}
+.loader div{
+  background:#111714;border:1px solid #2a342f;padding:15px 18px;border-radius:15px;font-weight:700
+}
+.toast{
+  position:absolute;z-index:2400;top:222px;left:50%;transform:translate(-50%,-8px);opacity:0;
+  background:#111714;border:1px solid #2e3933;border-radius:11px;padding:8px 11px;max-width:88%;
+  text-align:center;font-size:11px;transition:.2s;pointer-events:none
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="map"></div>
+
+  <div class="top">
+    <div class="search">
+      <div class="routeRow">
+        <span class="dot"></span>
+        <div class="pointSearchWrap">
+          <input id="fromSearch" class="pointSearchInput" type="search" autocomplete="off" placeholder="Поиск среди 10000+ адресов">
+          <input id="fromSelect" type="hidden">
+          <div id="fromResults" class="pointResults"></div>
+        </div>
+      </div>
+      <div class="routeRow">
+        <span class="dot end"></span>
+        <div class="pointSearchWrap">
+          <input id="toSearch" class="pointSearchInput" type="search" autocomplete="off" placeholder="Поиск среди 10000+ адресов">
+          <input id="toSelect" type="hidden">
+          <div id="toResults" class="pointResults"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="swapBtn">⇅ Поменять</button>
+        <button class="btn green" id="routeBtn">Построить маршрут</button>
+      </div>
+    </div>
+
+    <div class="chips">
+      <button class="chip on" id="timeChip">◷ Сейчас</button>
+      <button class="chip" id="passChip">👤 1</button>
+      <button class="chip" id="classChip">🚕 Эконом</button>
+      <button class="chip" id="filterBtn">☷ Фильтры</button>
+      <button class="chip" id="themeBtn">☀️ Светлая</button>
+    </div>
+  </div>
+
+  <div class="zoom">
+    <button class="fab" id="zoomIn">＋</button>
+    <button class="fab" id="zoomOut">−</button>
+    <button class="fab" id="fitBtn">⌗</button>
+  </div>
+
+  <div class="hint">Нажмите на любое место карты, чтобы построить маршрут туда</div>
+
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="summary">
+      <div><h3>Маршрут</h3><p id="summaryText">Школа Летово → Красная площадь</p></div>
+      <div class="stats"><strong id="distance">—</strong><span id="duration">—</span></div>
+    </div>
+    <div class="cards" id="cards"></div>
+
+    <div class="savings" id="savingsCard">
+      <div class="savingsIcon">●</div>
+      <div class="savingsText">
+        <strong id="savingsTitle">Вы сэкономите примерно ₽0</strong>
+        <span id="savingsSub">по сравнению с текущей локацией</span>
+      </div>
+      <div class="savingsArrow">›</div>
+    </div>
+
+    <button class="btn green" style="width:100%;margin-top:10px" id="bestBtn">Выбрать лучшую точку посадки</button>
+    <div class="note">Дороги и парки отображаются цветной картой. Цены и время подачи — демонстрационные и генерируются случайно.</div>
+  </div>
+
+  <div class="filters" id="filters">
+    <div class="fhead"><h2>Фильтры</h2><button class="close" id="closeFilters">×</button></div>
+
+    <div class="section">
+      <h4>Время</h4>
+      <div class="segs" data-kind="time">
+        <button class="on">Сейчас</button><button>Через 10 мин</button><button>Через 30 мин</button><button>Позже</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>Пассажиры</h4>
+      <div class="segs" data-kind="pass">
+        <button class="on">1</button><button>2</button><button>3</button><button>4+</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>Тариф</h4>
+      <select id="classSelect">
+        <option>Эконом</option><option>Комфорт</option><option>Комфорт+</option><option>Бизнес</option><option>Минивэн</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <h4>Дополнительно</h4>
+      <div class="toggleRow"><span>🧸 Детское кресло</span><div class="toggle"><i></i></div></div>
+      <div class="toggleRow"><span>🐾 С животными</span><div class="toggle"><i></i></div></div>
+      <div class="toggleRow"><span>🧳 Большой багаж</span><div class="toggle"><i></i></div></div>
+    </div>
+
+    <div class="section">
+      <h4>Максимальное время пешком</h4>
+      <div class="walkControl">
+        <div class="walkIcon">🚶</div>
+        <div class="walkControlMain">
+          <div class="walkValue"><span id="walkValue">10</span> минут</div>
+          <input class="walkRange" id="walkRange" type="range" min="2" max="20" step="1" value="10">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn green" style="width:100%;margin-top:18px" id="applyFilters">Применить</button>
+  </div>
+
+  <div class="loader" id="loader"><div>Строю маршрут по Москве…</div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const POINTS = {
+  letovo: {
+    name:"Школа Летово",
+    address:"Зимёнковская улица, 3, Москва, Коммунарка",
+    subtitle:"Зимёнковская улица, 3",
+    aliases:"Зименковская улица 3 Зимёнковская 3 Летово",
+    lat:55.55754, lng:37.42267
+  },
+  red_square: {
+    name:"Красная площадь",
+    address:"Красная площадь, Москва",
+    subtitle:"Красная площадь",
+    aliases:"Красная площадь 1 Кремль центр Москвы",
+    lat:55.75393, lng:37.62080
+  },
+  gorky: {
+    name:"Парк Горького",
+    address:"улица Крымский Вал, 9, Москва",
+    subtitle:"Крымский Вал, 9",
+    aliases:"Крымский Вал 9 ЦПКиО Горького",
+    lat:55.72981, lng:37.60112
+  },
+  moscow_city: {
+    name:"Москва-Сити",
+    address:"Пресненская набережная, 8, стр. 1, Москва",
+    subtitle:"Пресненская набережная, 8",
+    aliases:"Пресненская наб 8 Москва Сити Moscow City Город Столиц",
+    lat:55.74983, lng:37.53732
+  },
+  vdnkh: {
+    name:"ВДНХ",
+    address:"проспект Мира, 119, Москва",
+    subtitle:"проспект Мира, 119",
+    aliases:"Проспект Мира 119 Выставка достижений народного хозяйства",
+    lat:55.82988, lng:37.63261
+  },
+  tretyakov: {
+    name:"Третьяковская галерея",
+    address:"Лаврушинский переулок, 10, Москва",
+    subtitle:"Лаврушинский переулок, 10",
+    aliases:"Лаврушинский 10 Третьяковка",
+    lat:55.74144, lng:37.62010
+  },
+  kievsky: {
+    name:"Киевский вокзал",
+    address:"площадь Киевского Вокзала, 1, Москва",
+    subtitle:"площадь Киевского Вокзала, 1",
+    aliases:"Киевского вокзала 1 Киевский жд вокзал",
+    lat:55.74359, lng:37.56572
+  },
+  luzhniki: {
+    name:"Лужники",
+    address:"улица Лужники, 24, Москва",
+    subtitle:"улица Лужники, 24",
+    aliases:"Лужники 24 стадион Лужники",
+    lat:55.71577, lng:37.55372
+  },
+  bolshoi: {
+    name:"Большой театр",
+    address:"Театральная площадь, 1, Москва",
+    subtitle:"Театральная площадь, 1",
+    aliases:"Театральная 1 Большой",
+    lat:55.76013, lng:37.61865
+  },
+  msu: {
+    name:"МГУ",
+    address:"Ленинские горы, 1, Москва",
+    subtitle:"Ленинские горы, 1",
+    aliases:"Ленинские горы 1 Московский государственный университет главное здание МГУ",
+    lat:55.70330, lng:37.53005
+  },
+  arbat: {
+    name:"Старый Арбат",
+    address:"улица Арбат, Москва",
+    subtitle:"улица Арбат",
+    aliases:"Арбат Старый Арбат улица Арбат",
+    lat:55.74906, lng:37.59133
+  },
+  zaryadye: {
+    name:"Парк Зарядье",
+    address:"улица Варварка, 6, стр. 1, Москва",
+    subtitle:"Варварка, 6, стр. 1",
+    aliases:"Варварка 6 Зарядье",
+    lat:55.75152, lng:37.62832
+  },
+  patriarshie: {
+    name:"Патриаршие пруды",
+    address:"Малая Бронная улица, владения 30–42, Москва",
+    subtitle:"Малая Бронная улица, 30–42",
+    aliases:"Малая Бронная 30 42 Патрики Патриаршие",
+    lat:55.76366, lng:37.59268
+  },
+  khodynka: {
+    name:"Ходынское поле",
+    address:"Ходынский бульвар, 10Б, Москва",
+    subtitle:"Ходынский бульвар, 10Б",
+    aliases:"Ходынский бульвар 10Б парк Ходынское поле",
+    lat:55.79085, lng:37.53118
+  },
+  kolomenskoye: {
+    name:"Коломенское",
+    address:"проспект Андропова, 39, Москва",
+    subtitle:"проспект Андропова, 39",
+    aliases:"Андропова 39 музей заповедник Коломенское",
+    lat:55.66783, lng:37.67074
+  },
+  severny_port: {
+    name:"Северный речной вокзал",
+    address:"Ленинградское шоссе, 51, Москва",
+    subtitle:"Ленинградское шоссе, 51",
+    aliases:"Ленинградское 51 Речной вокзал Северный",
+    lat:55.85166, lng:37.46689
+  },
+  dream_island: {
+    name:"Остров Мечты",
+    address:"проспект Андропова, 1, Москва",
+    subtitle:"проспект Андропова, 1",
+    aliases:"Андропова 1 Dream Island Остров мечты",
+    lat:55.69415, lng:37.67539
+  },
+  ostankino: {
+    name:"Останкинская башня",
+    address:"улица Академика Королёва, 15, Москва",
+    subtitle:"улица Академика Королёва, 15",
+    aliases:"Академика Королева 15 Останкинская телебашня Останкино",
+    lat:55.81968, lng:37.61166
+  },
+  tsaritsyno: {
+    name:"Царицыно",
+    address:"Дольская улица, 1, Москва",
+    subtitle:"Дольская улица, 1",
+    aliases:"Дольская 1 музей заповедник Царицыно",
+    lat:55.61552, lng:37.68202
+  }
+};
+
+// 10000 synthetic searchable demo addresses distributed across Moscow.
+// The labels look like normal street + house addresses.
+// Coordinates and house numbers are for prototype/demo purposes and are not verified real addresses.
+function seededRandomFactory(seed){
+  let state=seed>>>0;
+  return function(){
+    state=(1664525*state+1013904223)>>>0;
+    return state/4294967296;
+  };
+}
+
+const seededRandom=seededRandomFactory(20260925);
+
+const MOSCOW_STREETS = [
+  "Тверская улица",
+  "улица Арбат",
+  "Большая Никитская улица",
+  "Малая Никитская улица",
+  "Большая Дмитровка",
+  "Малая Дмитровка",
+  "Пятницкая улица",
+  "Большая Ордынка",
+  "Малая Ордынка",
+  "Люсиновская улица",
+  "Шаболовская улица",
+  "Мытная улица",
+  "Дубининская улица",
+  "Космодамианская набережная",
+  "Котельническая набережная",
+  "Краснопресненская набережная",
+  "Пресненская набережная",
+  "Садовая-Кудринская улица",
+  "Садовая-Самотёчная улица",
+  "Садовая-Сухаревская улица",
+  "Садовая-Спасская улица",
+  "Земляной Вал",
+  "Валовая улица",
+  "Сущёвский Вал",
+  "Бутырский Вал",
+  "Ленинградский проспект",
+  "Ленинградское шоссе",
+  "Волоколамское шоссе",
+  "Дмитровское шоссе",
+  "Алтуфьевское шоссе",
+  "Ярославское шоссе",
+  "Щёлковское шоссе",
+  "Шоссе Энтузиастов",
+  "Рязанский проспект",
+  "Волгоградский проспект",
+  "Каширское шоссе",
+  "Варшавское шоссе",
+  "Севастопольский проспект",
+  "Ленинский проспект",
+  "проспект Вернадского",
+  "Мичуринский проспект",
+  "Кутузовский проспект",
+  "Рублёвское шоссе",
+  "Можайское шоссе",
+  "Аминьевское шоссе",
+  "Ломоносовский проспект",
+  "Нахимовский проспект",
+  "Балаклавский проспект",
+  "Каховка",
+  "Профсоюзная улица",
+  "Новочерёмушкинская улица",
+  "улица Вавилова",
+  "улица Дмитрия Ульянова",
+  "улица Гарибальди",
+  "улица Обручева",
+  "улица Академика Пилюгина",
+  "улица Академика Королёва",
+  "Останкинская улица",
+  "Шереметьевская улица",
+  "улица Советской Армии",
+  "Олимпийский проспект",
+  "проспект Мира",
+  "улица Гиляровского",
+  "Мещанская улица",
+  "Трифоновская улица",
+  "Новослободская улица",
+  "Долгоруковская улица",
+  "Лесная улица",
+  "Бутырская улица",
+  "Башиловская улица",
+  "Петровско-Разумовский проезд",
+  "Тимирязевская улица",
+  "Большая Академическая улица",
+  "Коптевская улица",
+  "Фестивальная улица",
+  "Флотская улица",
+  "Петрозаводская улица",
+  "Беломорская улица",
+  "Ангарская улица",
+  "Дегунинская улица",
+  "Дубнинская улица",
+  "Коровинское шоссе",
+  "Череповецкая улица",
+  "Широкая улица",
+  "Енисейская улица",
+  "улица Менжинского",
+  "Снежная улица",
+  "улица Лётчика Бабушкина",
+  "Изумрудная улица",
+  "Тайнинская улица",
+  "Холмогорская улица",
+  "Вешняковская улица",
+  "Кусковская улица",
+  "Перовская улица",
+  "Зелёный проспект",
+  "Свободный проспект",
+  "Федеративный проспект",
+  "Новогиреевская улица",
+  "Мартеновская улица",
+  "Электродная улица",
+  "Авиамоторная улица",
+  "Красноказарменная улица",
+  "Солдатская улица",
+  "Госпитальная улица",
+  "Бауманская улица",
+  "Спартаковская улица",
+  "Бакунинская улица",
+  "Русаковская улица",
+  "Стромынка",
+  "Преображенская улица",
+  "Большая Черкизовская улица",
+  "Халтуринская улица",
+  "Первомайская улица",
+  "Парковая улица",
+  "Сиреневый бульвар",
+  "Измайловский бульвар",
+  "Измайловское шоссе",
+  "Нижегородская улица",
+  "Люблинская улица",
+  "Братиславская улица",
+  "Перерва",
+  "Краснодарская улица",
+  "Совхозная улица",
+  "Белореченская улица",
+  "улица Верхние Поля",
+  "улица Генерала Кузнецова",
+  "улица Маршала Полубоярова",
+  "Липецкая улица",
+  "Бакинская улица",
+  "Ереванская улица",
+  "Кантемировская улица",
+  "Кавказский бульвар",
+  "Чертановская улица",
+  "Кировоградская улица",
+  "Дорожная улица",
+  "Подольских Курсантов",
+  "Бирюлёвская улица",
+  "Лебедянская улица",
+  "Булатниковская улица",
+  "Домодедовская улица",
+  "Шипиловская улица",
+  "Борисовские Пруды",
+  "Ключевая улица",
+  "Алма-Атинская улица",
+  "Нагатинская улица",
+  "Коломенский проезд",
+  "Судостроительная улица",
+  "Кленовый бульвар",
+  "Андропова проспект",
+  "Автозаводская улица",
+  "Велозаводская улица",
+  "Симоновский Вал",
+  "Кожуховская улица",
+  "Южнопортовая улица",
+  "Угрешская улица",
+  "Крымский Вал",
+  "Фрунзенская набережная",
+  "Комсомольский проспект",
+  "улица Хамовнический Вал",
+  "Большая Пироговская улица",
+  "Малая Пироговская улица",
+  "Погодинская улица",
+  "Плющиха",
+  "Смоленская улица",
+  "Большая Дорогомиловская улица",
+  "Бережковская набережная",
+  "улица 1905 года",
+  "Звенигородское шоссе",
+  "Хорошёвское шоссе",
+  "Ходынский бульвар",
+  "улица Авиаконструктора Микояна",
+  "улица Маршала Бирюзова",
+  "улица Народного Ополчения",
+  "улица Мнёвники",
+  "Карамышевская набережная",
+  "Осенняя улица",
+  "Крылатская улица",
+  "Ярцевская улица",
+  "Молодогвардейская улица",
+  "Беловежская улица",
+  "Нежинская улица",
+  "Минская улица",
+  "Мосфильмовская улица",
+  "Матвеевская улица",
+  "Очаковское шоссе",
+  "Никулинская улица",
+  "Озёрная улица",
+  "Боровское шоссе",
+  "улица Богданова",
+  "Солнцевский проспект",
+  "Родниковая улица",
+  "Киевское шоссе",
+  "Зимёнковская улица",
+  "улица Александры Монаховой",
+  "Калужское шоссе",
+  "улица Адмирала Лазарева",
+  "улица Горчакова",
+  "улица Академика Семёнова"
+];
+
+function areaLabel(lat,lng){
+  const centerLat=55.751244;
+  const centerLng=37.618423;
+  const north=lat-centerLat;
+  const east=lng-centerLng;
+
+  if(Math.abs(north)<0.045 && Math.abs(east)<0.07) return "ЦАО, Москва";
+  if(north>0.09 && east>0.08) return "СВАО, Москва";
+  if(north>0.09 && east<-0.08) return "СЗАО, Москва";
+  if(north<-0.09 && east>0.08) return "ЮВАО, Москва";
+  if(north<-0.09 && east<-0.08) return "ЮЗАО, Москва";
+  if(north>0.07) return "САО, Москва";
+  if(north<-0.07) return "ЮАО, Москва";
+  if(east>0.08) return "ВАО, Москва";
+  if(east<-0.08) return "ЗАО, Москва";
+  return "Москва";
+}
+
+for(let i=1;i<=10000;i++){
+  const angle=seededRandom()*Math.PI*2;
+  const radius=Math.sqrt(seededRandom());
+
+  const lat=55.751244 + Math.sin(angle)*0.205*radius;
+  const lng=37.618423 + Math.cos(angle)*0.300*radius;
+
+  // Deterministic address label. The same generated point keeps the same address.
+  const street=MOSCOW_STREETS[(i*37 + 11) % MOSCOW_STREETS.length];
+  const house=1 + Math.floor((i-1)/MOSCOW_STREETS.length)*2 + (i % 2);
+  const suffix=(i % 17===0) ? `, корп. ${1+(i%4)}` : "";
+  const address=`${street}, ${house}${suffix}`;
+  const area=areaLabel(lat,lng);
+  const number=String(i).padStart(4,"0");
+
+  POINTS["moscow_"+number]={
+    name:address,
+    subtitle:area,
+    lat:+lat.toFixed(6),
+    lng:+lng.toFixed(6),
+    synthetic:true
+  };
+}
+
+const MAP_CLICK_DESTINATION_ID="__map_click_destination__";
+
+const fromSelect=document.getElementById("fromSelect");
+const toSelect=document.getElementById("toSelect");
+const fromSearch=document.getElementById("fromSearch");
+const toSearch=document.getElementById("toSearch");
+const fromResults=document.getElementById("fromResults");
+const toResults=document.getElementById("toResults");
+const cards=document.getElementById("cards");
+const summaryText=document.getElementById("summaryText");
+const distanceEl=document.getElementById("distance");
+const durationEl=document.getElementById("duration");
+const loader=document.getElementById("loader");
+const toast=document.getElementById("toast");
+
+const FEATURED_POINT_IDS=[
+  "letovo","red_square","gorky","moscow_city","vdnkh",
+  "msu","arbat","zaryadye","luzhniki","tsaritsyno"
+];
+
+function normalizeSearchText(value){
+  return String(value||"")
+    .toLowerCase()
+    .replaceAll("ё","е")
+    .trim();
+}
+
+const POINT_INDEX=Object.entries(POINTS).map(([id,p])=>({
+  id,
+  point:p,
+  search:normalizeSearchText(
+    `${p.name} ${p.address||""} ${p.subtitle||""} ${p.aliases||""} ${id}`
+  )
+}));
+
+function findPoints(query){
+  const q=normalizeSearchText(query);
+
+  if(!q){
+    const featured=FEATURED_POINT_IDS
+      .map(id=>({id,point:POINTS[id]}))
+      .filter(x=>x.point);
+
+    const generated=POINT_INDEX
+      .filter(item=>item.point.synthetic)
+      .slice(0,60)
+      .map(item=>({id:item.id,point:item.point}));
+
+    return [...featured,...generated];
+  }
+
+  const tokens=q.split(/\s+/).filter(Boolean);
+
+  return POINT_INDEX
+    .filter(item=>tokens.every(token=>item.search.includes(token)))
+    .map(item=>{
+      const n=normalizeSearchText(item.point.name);
+      let score=10;
+      if(n===q) score=0;
+      else if(n.startsWith(q)) score=1;
+      else if(n.includes(q)) score=2;
+      else if(item.search.startsWith(q)) score=3;
+      return {...item,score};
+    })
+    .sort((a,b)=>a.score-b.score || a.point.name.localeCompare(b.point.name,"ru"))
+    .slice(0,80);
+}
+
+function countPointMatches(query){
+  const q=normalizeSearchText(query);
+  if(!q) return POINT_INDEX.length;
+
+  const tokens=q.split(/\s+/).filter(Boolean);
+  return POINT_INDEX.filter(item=>
+    tokens.every(token=>item.search.includes(token))
+  ).length;
+}
+
+function setPointSelection(kind,id,trigger=true){
+  const hidden=kind==="from" ? fromSelect : toSelect;
+  const input=kind==="from" ? fromSearch : toSearch;
+  const results=kind==="from" ? fromResults : toResults;
+  const p=POINTS[id];
+
+  if(!p) return;
+
+  hidden.value=id;
+  input.value=p.name;
+  results.classList.remove("open");
+
+  if(trigger){
+    hidden.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+}
+
+function renderPointResults(kind){
+  const input=kind==="from" ? fromSearch : toSearch;
+  const results=kind==="from" ? fromResults : toResults;
+  const matches=findPoints(input.value);
+  const total=countPointMatches(input.value);
+
+  results.innerHTML="";
+
+  const count=document.createElement("div");
+  count.className="pointResultsCount";
+  count.textContent=
+    input.value.trim()
+      ? `Найдено: ${total} · показано до 80`
+      : `Доступно адресов: ${POINT_INDEX.length} · показаны первые варианты`;
+  results.appendChild(count);
+
+  if(!matches.length){
+    const empty=document.createElement("div");
+    empty.className="pointResultsEmpty";
+    empty.textContent="Ничего не найдено";
+    results.appendChild(empty);
+    results.classList.add("open");
+    return;
+  }
+
+  matches.forEach(({id,point},index)=>{
+    const row=document.createElement("div");
+    row.className="pointResult"+(index===0 ? " active" : "");
+    row.dataset.id=id;
+
+    const title=document.createElement("strong");
+    title.textContent=point.name;
+
+    const subtitle=document.createElement("span");
+    subtitle.textContent=point.address || point.subtitle ||
+      `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
+
+    row.appendChild(title);
+    row.appendChild(subtitle);
+
+    row.addEventListener("mousedown",e=>{
+      e.preventDefault();
+      setPointSelection(kind,id,true);
+    });
+
+    results.appendChild(row);
+  });
+
+  results.classList.add("open");
+}
+
+function setupPointSearch(kind){
+  const input=kind==="from" ? fromSearch : toSearch;
+  const hidden=kind==="from" ? fromSelect : toSelect;
+  const results=kind==="from" ? fromResults : toResults;
+
+  input.addEventListener("focus",()=>renderPointResults(kind));
+
+  input.addEventListener("input",()=>{
+    const selected=POINTS[hidden.value];
+    if(!selected || input.value!==selected.name){
+      hidden.value="";
+    }
+    renderPointResults(kind);
+  });
+
+  input.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
+      const first=results.querySelector(".pointResult");
+      if(first){
+        setPointSelection(kind,first.dataset.id,true);
+        input.blur();
+      }
+    }
+    if(e.key==="Escape"){
+      results.classList.remove("open");
+      input.blur();
+    }
+  });
+
+  input.addEventListener("blur",()=>{
+    setTimeout(()=>results.classList.remove("open"),120);
+  });
+}
+
+setupPointSearch("from");
+setupPointSearch("to");
+
+setPointSelection("from","letovo",false);
+setPointSelection("to","red_square",false);
+
+const map=L.map("map",{zoomControl:false}).setView([55.72,37.57],10);
+
+const darkMapLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+  maxZoom:20,
+  subdomains:"abcd",
+  attribution:"&copy; OpenStreetMap contributors &copy; CARTO"
+});
+
+const lightMapLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
+  maxZoom:20,
+  subdomains:"abcd",
+  attribution:"&copy; OpenStreetMap contributors &copy; CARTO"
+});
+
+const fallbackLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  maxZoom:19,
+  attribution:"&copy; OpenStreetMap contributors"
+});
+
+let currentMapTheme="dark";
+let fallbackActive=false;
+
+function activateMapLayer(theme){
+  currentMapTheme=theme;
+
+  [darkMapLayer,lightMapLayer,fallbackLayer].forEach(layer=>{
+    if(map.hasLayer(layer)) map.removeLayer(layer);
+  });
+
+  fallbackActive=false;
+
+  if(theme==="light"){
+    lightMapLayer.addTo(map);
+  }else{
+    darkMapLayer.addTo(map);
+  }
+}
+
+function useFallbackMap(){
+  if(fallbackActive) return;
+  fallbackActive=true;
+
+  [darkMapLayer,lightMapLayer].forEach(layer=>{
+    if(map.hasLayer(layer)) map.removeLayer(layer);
+  });
+
+  fallbackLayer.addTo(map);
+}
+
+darkMapLayer.on("tileerror",useFallbackMap);
+lightMapLayer.on("tileerror",useFallbackMap);
+
+activateMapLayer("dark");
+
+map.on("click",(e)=>{
+  const lat=+e.latlng.lat.toFixed(6);
+  const lng=+e.latlng.lng.toFixed(6);
+
+  POINTS[MAP_CLICK_DESTINATION_ID]={
+    name:"Точка на карте",
+    address:`${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+    subtitle:"Выбрано нажатием на карту",
+    lat,
+    lng,
+    dynamic:true
+  };
+
+  toSelect.value=MAP_CLICK_DESTINATION_ID;
+  toSearch.value=`Точка на карте · ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  toResults.classList.remove("open");
+
+  showToast("Точка назначения выбрана на карте");
+  buildRoute();
+});
+
+let routeLayer=null;
+let walkLayer=null;
+let pointMarkers=[];
+let taxiMarkers=[];
+let taxiData=[];
+let selectedTaxi=0;
+let routeBounds=null;
+let routeKm=10;
+let className="Эконом";
+let currentLocationFare=0;
+
+function showToast(t){
+  toast.textContent=t;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>toast.classList.remove("show"),1700);
+}
+function setLoading(v){loader.classList.toggle("show",v)}
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+
+function pointIcon(name,type){
+  return L.divIcon({
+    className:"",
+    html:`<div class="pointLabel ${type}">${name}</div>`,
+    iconSize:[120,30],
+    iconAnchor:[60,15]
+  });
+}
+
+function taxiIcon(p,isBest){
+  return L.divIcon({
+    className:"",
+    html:`<div class="taxiLabel ${isBest?"best":""}">
+      <b>₽${p.price}</b><small>${p.walk} мин пешком</small>
+    </div>`,
+    iconSize:[86,44],
+    iconAnchor:[43,22]
+  });
+}
+
+function clearPointMarkers(){
+  pointMarkers.forEach(m=>map.removeLayer(m));
+  pointMarkers=[];
+}
+
+function addPointMarkers(a,b){
+  clearPointMarkers();
+  pointMarkers.push(
+    L.marker([a.lat,a.lng],{icon:pointIcon(a.name,"start"),zIndexOffset:500}).addTo(map)
+  );
+  pointMarkers.push(
+    L.marker([b.lat,b.lng],{icon:pointIcon(b.dynamic ? "Куда" : b.name,"end"),zIndexOffset:500}).addTo(map)
+  );
+}
+
+function tariffMult(){
+  return {
+    "Эконом":1,
+    "Комфорт":1.25,
+    "Комфорт+":1.5,
+    "Бизнес":2.15,
+    "Минивэн":1.72
+  }[className] || 1;
+}
+
+async function buildRoute(){
+  const a=POINTS[fromSelect.value];
+  const b=POINTS[toSelect.value];
+
+  if(!a || !b){
+    showToast("Выберите точку из результатов поиска");
+    return;
+  }
+
+  if(fromSelect.value===toSelect.value){
+    showToast("Выберите две разные точки");
+    return;
+  }
+
+  try{
+    setLoading(true);
+
+    const url=
+      `https://router.project-osrm.org/route/v1/driving/`+
+      `${a.lng},${a.lat};${b.lng},${b.lat}`+
+      `?overview=full&geometries=geojson`;
+
+    const r=await fetch(url);
+    const d=await r.json();
+
+    if(!r.ok || d.code!=="Ok" || !d.routes?.length){
+      throw new Error("Маршрут временно недоступен");
+    }
+
+    if(routeLayer)map.removeLayer(routeLayer);
+
+    routeLayer=L.geoJSON(d.routes[0].geometry,{
+      style:{
+        color:"#49ed8d",
+        weight:6,
+        opacity:.95,
+        lineCap:"round"
+      }
+    }).addTo(map);
+
+    routeKm=d.routes[0].distance/1000;
+    const mins=Math.max(1,Math.round(d.routes[0].duration/60));
+
+    distanceEl.textContent=routeKm.toFixed(1)+" км";
+    durationEl.textContent="≈ "+mins+" мин";
+    summaryText.textContent=a.name+" → "+b.name;
+
+    addPointMarkers(a,b);
+
+    routeBounds=routeLayer.getBounds().pad(.15);
+    map.fitBounds(routeBounds,{
+      paddingTopLeft:[20,180],
+      paddingBottomRight:[20,280]
+    });
+
+    generateTaxiPrices(a);
+
+  }catch(e){
+    if(routeLayer)map.removeLayer(routeLayer);
+
+    routeLayer=L.polyline(
+      [
+        [a.lat,a.lng],
+        [
+          (a.lat+b.lat)/2+0.01,
+          (a.lng+b.lng)/2-0.01
+        ],
+        [b.lat,b.lng]
+      ],
+      {
+        color:"#49ed8d",
+        weight:6,
+        opacity:.95
+      }
+    ).addTo(map);
+
+    const rough=map.distance([a.lat,a.lng],[b.lat,b.lng])/1000*1.25;
+    routeKm=rough;
+
+    distanceEl.textContent=routeKm.toFixed(1)+" км";
+    durationEl.textContent="≈ "+Math.round(routeKm*2.6)+" мин";
+    summaryText.textContent=a.name+" → "+b.name;
+
+    addPointMarkers(a,b);
+
+    routeBounds=routeLayer.getBounds().pad(.18);
+    map.fitBounds(routeBounds,{
+      paddingTopLeft:[20,180],
+      paddingBottomRight:[20,280]
+    });
+
+    generateTaxiPrices(a);
+    showToast("Показан резервный маршрут");
+  }finally{
+    setLoading(false);
+  }
+}
+
+function generateTaxiPrices(origin){
+  taxiMarkers.forEach(m=>map.removeLayer(m));
+  taxiMarkers=[];
+  taxiData=[];
+
+  const offsets=[
+    [0.0022,0.0017],
+    [0.0030,-0.0022],
+    [-0.0021,0.0031],
+    [-0.0032,-0.0018],
+    [0.0006,0.0044]
+  ];
+
+  const mult=tariffMult();
+  const base=Math.round((170+routeKm*33)*mult/10)*10;
+
+  offsets.forEach((o,i)=>{
+    const walk=rand(2,11);
+    const eta=rand(3,13);
+    const price=Math.max(220,Math.round((base+rand(-90,190)+i*20)/10)*10);
+
+    const p={
+      lat:origin.lat+o[0],
+      lng:origin.lng+o[1],
+      walk,eta,price
+    };
+    taxiData.push(p);
+
+    const marker=L.marker(
+      [p.lat,p.lng],
+      {icon:taxiIcon(p,i===0),zIndexOffset:300}
+    ).addTo(map);
+
+    marker.on("click",()=>selectTaxi(i));
+    taxiMarkers.push(marker);
+  });
+
+  selectedTaxi=0;
+
+  const highestPickupFare=Math.max(...taxiData.map(p=>p.price));
+  currentLocationFare=highestPickupFare+rand(50,130);
+
+  renderCards();
+  drawWalkLine();
+  updateSavings();
+}
+
+function renderCards(){
+  cards.innerHTML="";
+  taxiData.forEach((p,i)=>{
+    const el=document.createElement("div");
+    el.className="card"+(i===selectedTaxi?" active":"");
+    el.innerHTML=
+      `<div class="walk">🚶 ${p.walk} мин</div>
+       <div class="price">₽${p.price}</div>
+       <div class="eta">${p.eta} мин подача</div>`;
+    el.onclick=()=>selectTaxi(i);
+    cards.appendChild(el);
+  });
+}
+
+
+function updateSavings(){
+  const p=taxiData[selectedTaxi];
+  if(!p) return;
+
+  const savings=Math.max(0,currentLocationFare-p.price);
+
+  document.getElementById("savingsTitle").textContent=
+    `Вы сэкономите примерно ₽${savings}`;
+
+  document.getElementById("savingsSub").textContent=
+    `по сравнению с текущей локацией (₽${currentLocationFare})`;
+}
+
+let pickupRouteRequest=0;
+
+async function rebuildRouteFromPickup(i){
+  const pickup=taxiData[i];
+  const destination=POINTS[toSelect.value];
+
+  if(!pickup || !destination) return;
+
+  const requestId=++pickupRouteRequest;
+
+  try{
+    const url=
+      `https://router.project-osrm.org/route/v1/driving/`+
+      `${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}`+
+      `?overview=full&geometries=geojson`;
+
+    const r=await fetch(url);
+    const d=await r.json();
+
+    if(requestId!==pickupRouteRequest) return;
+
+    if(!r.ok || d.code!=="Ok" || !d.routes?.length){
+      throw new Error("Маршрут временно недоступен");
+    }
+
+    if(routeLayer) map.removeLayer(routeLayer);
+
+    routeLayer=L.geoJSON(d.routes[0].geometry,{
+      style:{
+        color:"#49ed8d",
+        weight:6,
+        opacity:.95,
+        lineCap:"round"
+      }
+    }).addTo(map);
+
+    routeKm=d.routes[0].distance/1000;
+    const mins=Math.max(1,Math.round(d.routes[0].duration/60));
+
+    distanceEl.textContent=routeKm.toFixed(1)+" км";
+    durationEl.textContent="≈ "+mins+" мин";
+    summaryText.textContent="Точка посадки → "+destination.name;
+
+    addPointMarkers(
+      {
+        name:"Точка посадки",
+        lat:pickup.lat,
+        lng:pickup.lng
+      },
+      destination
+    );
+
+    routeBounds=routeLayer.getBounds().pad(.15);
+
+  }catch(e){
+    if(requestId!==pickupRouteRequest) return;
+
+    if(routeLayer) map.removeLayer(routeLayer);
+
+    routeLayer=L.polyline(
+      [
+        [pickup.lat,pickup.lng],
+        [
+          (pickup.lat+destination.lat)/2+0.006,
+          (pickup.lng+destination.lng)/2-0.006
+        ],
+        [destination.lat,destination.lng]
+      ],
+      {
+        color:"#49ed8d",
+        weight:6,
+        opacity:.95
+      }
+    ).addTo(map);
+
+    const rough=
+      map.distance(
+        [pickup.lat,pickup.lng],
+        [destination.lat,destination.lng]
+      )/1000*1.25;
+
+    routeKm=rough;
+    distanceEl.textContent=routeKm.toFixed(1)+" км";
+    durationEl.textContent="≈ "+Math.max(1,Math.round(routeKm*2.6))+" мин";
+    summaryText.textContent="Точка посадки → "+destination.name;
+
+    addPointMarkers(
+      {
+        name:"Точка посадки",
+        lat:pickup.lat,
+        lng:pickup.lng
+      },
+      destination
+    );
+
+    routeBounds=routeLayer.getBounds().pad(.18);
+  }
+}
+
+function selectTaxi(i){
+  selectedTaxi=i;
+  taxiMarkers.forEach((m,j)=>m.setIcon(taxiIcon(taxiData[j],j===i)));
+  renderCards();
+  drawWalkLine();
+  updateSavings();
+  rebuildRouteFromPickup(i);
+}
+
+function drawWalkLine(){
+  if(walkLayer)map.removeLayer(walkLayer);
+
+  const origin=POINTS[fromSelect.value];
+  const t=taxiData[selectedTaxi];
+  if(!origin||!t)return;
+
+  walkLayer=L.polyline(
+    [[origin.lat,origin.lng],[t.lat,t.lng]],
+    {
+      color:"#d6dfda",
+      weight:3,
+      dashArray:"4 8",
+      opacity:.85
+    }
+  ).addTo(map);
+}
+
+document.getElementById("routeBtn").onclick=buildRoute;
+
+document.getElementById("swapBtn").onclick=()=>{
+  const fromId=fromSelect.value;
+  const toId=toSelect.value;
+
+  if(!POINTS[fromId] || !POINTS[toId]){
+    showToast("Сначала выберите обе точки");
+    return;
+  }
+
+  setPointSelection("from",toId,false);
+  setPointSelection("to",fromId,false);
+  buildRoute();
+};
+
+fromSelect.addEventListener("change", buildRoute);
+toSelect.addEventListener("change", buildRoute);
+
+document.getElementById("zoomIn").onclick=()=>map.zoomIn();
+document.getElementById("zoomOut").onclick=()=>map.zoomOut();
+document.getElementById("fitBtn").onclick=()=>{
+  if(routeBounds){
+    map.fitBounds(routeBounds,{
+      paddingTopLeft:[20,180],
+      paddingBottomRight:[20,280]
+    });
+  }
+};
+
+document.getElementById("bestBtn").onclick=()=>{
+  if(!taxiData.length)return;
+  const best=taxiData
+    .map((p,i)=>({i,score:p.price+p.walk*9}))
+    .sort((a,b)=>a.score-b.score)[0];
+
+  selectTaxi(best.i);
+  const p=taxiData[best.i];
+  showToast(`Выбрано: ₽${p.price}, ${p.walk} мин пешком`);
+};
+
+
+const walkRange=document.getElementById("walkRange");
+const walkValue=document.getElementById("walkValue");
+
+walkRange.addEventListener("input",()=>{
+  walkValue.textContent=walkRange.value;
+});
+
+document.getElementById("savingsCard").onclick=()=>{
+  if(!taxiData.length) return;
+
+  const cheapest=taxiData
+    .map((p,i)=>({i,price:p.price}))
+    .sort((a,b)=>a.price-b.price)[0];
+
+  selectTaxi(cheapest.i);
+  showToast(`Выбрана более выгодная точка: ₽${taxiData[cheapest.i].price}`);
+};
+
+const filters=document.getElementById("filters");
+document.getElementById("filterBtn").onclick=()=>filters.classList.add("open");
+document.getElementById("closeFilters").onclick=()=>filters.classList.remove("open");
+
+document.querySelectorAll(".toggle").forEach(t=>{
+  t.onclick=()=>t.classList.toggle("on");
+});
+
+document.querySelectorAll(".segs").forEach(seg=>{
+  seg.querySelectorAll("button").forEach(btn=>{
+    btn.onclick=()=>{
+      seg.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+      btn.classList.add("on");
+
+      if(seg.dataset.kind==="time"){
+        document.getElementById("timeChip").textContent="◷ "+btn.textContent;
+      }
+      if(seg.dataset.kind==="pass"){
+        document.getElementById("passChip").textContent="👤 "+btn.textContent;
+      }
+    };
+  });
+});
+
+document.getElementById("applyFilters").onclick=()=>{
+  className=document.getElementById("classSelect").value;
+
+  document.getElementById("classChip").textContent="🚕 "+className;
+  filters.classList.remove("open");
+
+  if(routeLayer){
+    generateTaxiPrices(POINTS[fromSelect.value]);
+  }
+
+  showToast("Фильтры применены");
+};
+
+
+// Theme switch changes ONLY the map layer.
+// The app interface remains exactly the same.
+const themeBtn = document.getElementById("themeBtn");
+
+function applyTheme(theme){
+  activateMapLayer(theme);
+
+  if(theme==="light"){
+    themeBtn.textContent="🌙 Тёмная";
+  }else{
+    themeBtn.textContent="☀️ Светлая";
+  }
+}
+
+applyTheme("dark");
+
+themeBtn.addEventListener("click",()=>{
+  const next=currentMapTheme==="dark" ? "light" : "dark";
+  applyTheme(next);
+});
+
+setTimeout(buildRoute,450);
+</script>
+</body>
+</html>

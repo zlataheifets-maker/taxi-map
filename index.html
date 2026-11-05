@@ -6,7 +6,17 @@
 <title>TaxiMap</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+/* Темная версия карты OpenStreetMap */
+#map.darkMap .leaflet-tile-pane{
+  filter:
+    brightness(.42)
+    contrast(1.28)
+    saturate(.72);
+}
 
+#map.lightMap .leaflet-tile-pane{
+  filter:none;
+}
 <style>
 :root{
   --bg:#080c0a;--panel:#0f1512;--panel2:#151c18;--line:#29332e;
@@ -2297,46 +2307,35 @@ const map=
     [55.72,37.57],
     10
   );
+const osmUrl=
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 
 const darkMapLayer=
   L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    osmUrl,
     {
-      maxZoom:20,
-      subdomains:"abcd",
+      maxZoom:19,
+
       attribution:
-        "&copy; OpenStreetMap contributors &copy; CARTO"
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }
   );
 
 
 const lightMapLayer=
   L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    {
-      maxZoom:20,
-      subdomains:"abcd",
-      attribution:
-        "&copy; OpenStreetMap contributors &copy; CARTO"
-    }
-  );
-
-
-const fallbackLayer=
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    osmUrl,
     {
       maxZoom:19,
+
       attribution:
-        "&copy; OpenStreetMap contributors"
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }
   );
 
 
 let currentMapTheme="dark";
-
-let fallbackActive=false;
 
 
 function activateMapLayer(theme){
@@ -2344,30 +2343,45 @@ function activateMapLayer(theme){
   currentMapTheme=theme;
 
 
-  [
-    darkMapLayer,
-    lightMapLayer,
-    fallbackLayer
-  ]
-  .forEach(layer=>{
-
-    if(map.hasLayer(layer)){
-      map.removeLayer(layer);
-    }
-
-  });
+  if(
+    map.hasLayer(darkMapLayer)
+  ){
+    map.removeLayer(darkMapLayer);
+  }
 
 
-  fallbackActive=false;
+  if(
+    map.hasLayer(lightMapLayer)
+  ){
+    map.removeLayer(lightMapLayer);
+  }
+
+
+  const mapElement=
+    document.getElementById("map");
+
+
+  mapElement.classList.remove(
+    "darkMap",
+    "lightMap"
+  );
 
 
   if(theme==="light"){
+
+    mapElement.classList.add(
+      "lightMap"
+    );
 
     lightMapLayer.addTo(map);
 
   }
 
   else{
+
+    mapElement.classList.add(
+      "darkMap"
+    );
 
     darkMapLayer.addTo(map);
 
@@ -2376,48 +2390,7 @@ function activateMapLayer(theme){
 }
 
 
-function useFallbackMap(){
-
-  if(fallbackActive){
-    return;
-  }
-
-
-  fallbackActive=true;
-
-
-  [
-    darkMapLayer,
-    lightMapLayer
-  ]
-  .forEach(layer=>{
-
-    if(map.hasLayer(layer)){
-      map.removeLayer(layer);
-    }
-
-  });
-
-
-  fallbackLayer.addTo(map);
-
-}
-
-
-darkMapLayer.on(
-  "tileerror",
-  useFallbackMap
-);
-
-
-lightMapLayer.on(
-  "tileerror",
-  useFallbackMap
-);
-
-
 activateMapLayer("dark");
-
 
 /* Нажатие на карту = точка назначения */
 

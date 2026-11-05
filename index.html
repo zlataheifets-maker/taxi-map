@@ -59,20 +59,30 @@ body{
 #map{
   position:absolute;
   inset:0 0 255px 0;
-  background:#d7ddd8;
+  background:#101412;
 }
 
-/* Тёмная карта на основе OpenStreetMap */
+/* ТЁМНАЯ КАРТА */
 #map.darkMap .leaflet-tile-pane{
   filter:
-    brightness(.44)
-    contrast(1.28)
-    saturate(.72);
+    invert(1)
+    hue-rotate(180deg)
+    brightness(.72)
+    contrast(1.18)
+    saturate(.82);
 }
 
-/* Светлая карта */
+#map.darkMap{
+  background:#0b0f0d;
+}
+
+/* СВЕТЛАЯ КАРТА */
 #map.lightMap .leaflet-tile-pane{
   filter:none;
+}
+
+#map.lightMap{
+  background:#e7ece8;
 }
 
 .leaflet-control-zoom{
@@ -291,7 +301,7 @@ select{
   border-radius:50%;
   border:1px solid #2c3630;
   background:#0f1512ef;
-  color:white;
+  color:#fff;
   font-size:20px;
   cursor:pointer;
   box-shadow:0 7px 22px #0008;
@@ -407,13 +417,6 @@ select{
   color:var(--muted);
 }
 
-.note{
-  margin-top:8px;
-  color:#7f8b85;
-  font-size:9px;
-  line-height:1.3;
-}
-
 .savings{
   margin-top:10px;
   display:flex;
@@ -459,6 +462,13 @@ select{
 .savingsArrow{
   font-size:22px;
   color:#d6dfda;
+}
+
+.note{
+  margin-top:8px;
+  color:#7f8b85;
+  font-size:9px;
+  line-height:1.3;
 }
 
 .taxiLabel{
@@ -593,7 +603,7 @@ select{
   width:21px;
   height:21px;
   border-radius:50%;
-  background:white;
+  background:#fff;
   transition:.2s;
 }
 
@@ -650,8 +660,7 @@ select{
   transform:translate(-50%,0);
 }
 
-
-/* ===== DESKTOP ===== */
+/* DESKTOP */
 
 @media(min-width:900px){
 
@@ -738,7 +747,6 @@ select{
     border-radius:22px;
     box-shadow:0 16px 50px #0009;
     padding:14px 16px 18px;
-    scrollbar-width:thin;
   }
 
   .handle{
@@ -845,7 +853,6 @@ select{
     left:460px;
   }
 }
-
 </style>
 </head>
 
@@ -860,6 +867,7 @@ select{
     <div class="search">
 
       <div class="routeRow">
+
         <span class="dot"></span>
 
         <div class="pointSearchWrap">
@@ -877,10 +885,12 @@ select{
           <div id="fromResults" class="pointResults"></div>
 
         </div>
+
       </div>
 
 
       <div class="routeRow">
+
         <span class="dot end"></span>
 
         <div class="pointSearchWrap">
@@ -898,6 +908,7 @@ select{
           <div id="toResults" class="pointResults"></div>
 
         </div>
+
       </div>
 
 
@@ -969,7 +980,6 @@ select{
 
     <div class="handle"></div>
 
-
     <div class="summary">
 
       <div>
@@ -983,7 +993,6 @@ select{
         </p>
 
       </div>
-
 
       <div class="stats">
 
@@ -1009,7 +1018,6 @@ select{
         ●
       </div>
 
-
       <div class="savingsText">
 
         <strong id="savingsTitle">
@@ -1021,7 +1029,6 @@ select{
         </span>
 
       </div>
-
 
       <div class="savingsArrow">
         ›
@@ -1158,7 +1165,6 @@ select{
         Дополнительно
       </h4>
 
-
       <div class="toggleRow">
 
         <span>
@@ -1229,10 +1235,6 @@ select{
 
 
 <script>
-
-/* =========================
-   ОСНОВНЫЕ ТОЧКИ
-   ========================= */
 
 const POINTS={
 
@@ -1409,10 +1411,6 @@ const POINTS={
 
 };
 
-
-/* =========================
-   УЛИЦЫ
-   ========================= */
 
 const MOSCOW_STREETS=[
 
@@ -1624,7 +1622,7 @@ function areaLabel(
 }
 
 
-/* 10 000 демонстрационных адресов */
+/* 10 000 адресов */
 
 for(
   let i=1;
@@ -1721,10 +1719,6 @@ for(
 }
 
 
-/* =========================
-   DOM
-   ========================= */
-
 const MAP_CLICK_DESTINATION_ID=
   "__map_click_destination__";
 
@@ -1793,31 +1787,18 @@ const toast=
 const FEATURED_POINT_IDS=[
 
   "letovo",
-
   "red_square",
-
   "gorky",
-
   "moscow_city",
-
   "vdnkh",
-
   "msu",
-
   "arbat",
-
   "zaryadye",
-
   "luzhniki",
-
   "tsaritsyno"
 
 ];
 
-
-/* =========================
-   ПОИСК
-   ========================= */
 
 function normalizeSearchText(
   value
@@ -2417,9 +2398,7 @@ setPointSelection(
 );
 
 
-/* =========================
-   КАРТА
-   ========================= */
+/* КАРТА */
 
 const map=
   L.map(
@@ -2436,11 +2415,6 @@ const map=
     10
   );
 
-
-/*
-  Обычный OpenStreetMap.
-  API key не требуется.
-*/
 
 const osmUrl=
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -2556,9 +2530,7 @@ activateMapLayer(
 );
 
 
-/* =========================
-   КЛИК ПО КАРТЕ
-   ========================= */
+/* НАЖАТИЕ НА КАРТУ */
 
 map.on(
   "click",
@@ -2622,10 +2594,6 @@ map.on(
 );
 
 
-/* =========================
-   СОСТОЯНИЕ
-   ========================= */
-
 let routeLayer=null;
 
 let walkLayer=null;
@@ -2647,10 +2615,8 @@ let className=
 
 let currentLocationFare=0;
 
+let pickupRouteRequest=0;
 
-/* =========================
-   HELPERS
-   ========================= */
 
 function showToast(t){
 
@@ -2751,10 +2717,6 @@ function routeFitOptions(){
 
 }
 
-
-/* =========================
-   МАРКЕРЫ
-   ========================= */
 
 function pointIcon(
   name,
@@ -2888,10 +2850,6 @@ function addPointMarkers(
 }
 
 
-/* =========================
-   ТАРИФ
-   ========================= */
-
 function tariffMult(){
 
   return{
@@ -2913,9 +2871,7 @@ function tariffMult(){
 }
 
 
-/* =========================
-   МАРШРУТ
-   ========================= */
+/* ПОСТРОЕНИЕ МАРШРУТА */
 
 async function buildRoute(){
 
@@ -3233,9 +3189,7 @@ async function buildRoute(){
 }
 
 
-/* =========================
-   ТОЧКИ ПОСАДКИ
-   ========================= */
+/* ТОЧКИ ПОСАДКИ */
 
 function generateTaxiPrices(
   origin
@@ -3436,10 +3390,6 @@ function generateTaxiPrices(
 }
 
 
-/* =========================
-   КАРТОЧКИ
-   ========================= */
-
 function renderCards(){
 
   cards.innerHTML="";
@@ -3501,10 +3451,6 @@ function renderCards(){
 }
 
 
-/* =========================
-   ЭКОНОМИЯ
-   ========================= */
-
 function updateSavings(){
 
   const p=
@@ -3546,14 +3492,7 @@ function updateSavings(){
 }
 
 
-/* =========================
-   МАРШРУТ ОТ ВЫБРАННОЙ
-   ТОЧКИ ПОСАДКИ
-   ========================= */
-
-let pickupRouteRequest=
-  0;
-
+/* МАРШРУТ ОТ ВЫБРАННОЙ ТОЧКИ ПОСАДКИ */
 
 async function rebuildRouteFromPickup(
   i
@@ -3754,7 +3693,6 @@ async function rebuildRouteFromPickup(
           ],
 
           [
-
             (
               pickup.lat+
               destination.lat
@@ -3768,7 +3706,6 @@ async function rebuildRouteFromPickup(
             )/
             2-
             0.006
-
           ],
 
           [
@@ -3912,10 +3849,6 @@ function selectTaxi(
 }
 
 
-/* =========================
-   ПЕШИЙ ПУТЬ
-   ========================= */
-
 function drawWalkLine(){
 
   if(walkLayer){
@@ -3988,9 +3921,7 @@ function drawWalkLine(){
 }
 
 
-/* =========================
-   КНОПКИ
-   ========================= */
+/* КНОПКИ */
 
 document
 .getElementById(
@@ -4060,10 +3991,6 @@ toSelect.addEventListener(
 );
 
 
-/* =========================
-   ZOOM
-   ========================= */
-
 document
 .getElementById(
   "zoomIn"
@@ -4107,9 +4034,7 @@ document
 };
 
 
-/* =========================
-   ЛУЧШАЯ ТОЧКА
-   ========================= */
+/* ЛУЧШАЯ ТОЧКА ПОСАДКИ */
 
 document
 .getElementById(
@@ -4175,9 +4100,7 @@ document
 };
 
 
-/* =========================
-   ЭКОНОМИЯ
-   ========================= */
+/* ЭКОНОМИЯ */
 
 document
 .getElementById(
@@ -4235,9 +4158,7 @@ document
 };
 
 
-/* =========================
-   ФИЛЬТРЫ
-   ========================= */
+/* ФИЛЬТРЫ */
 
 const filters=
   document.getElementById(
@@ -4414,9 +4335,7 @@ document
 };
 
 
-/* =========================
-   ТЕМА
-   ========================= */
+/* ТЕМА */
 
 const themeBtn=
   document.getElementById(
@@ -4478,8 +4397,6 @@ themeBtn.addEventListener(
 );
 
 
-/* Пересчёт размера карты */
-
 window.addEventListener(
   "resize",
   ()=>{
@@ -4489,8 +4406,6 @@ window.addEventListener(
   }
 );
 
-
-/* Старт */
 
 setTimeout(
   buildRoute,

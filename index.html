@@ -57,6 +57,7 @@ body{
   }
 }
 
+
 /* =========================
    MAP
    ========================= */
@@ -64,24 +65,74 @@ body{
 #map{
   position:absolute;
   inset:0 0 255px 0;
-  background:#061009;
+  background:#08110d;
 }
 
+
+/* =========================
+   DARK MAP
+   ========================= */
+
+#map.darkMap{
+  background:
+    linear-gradient(
+      180deg,
+      #07100c 0%,
+      #0b1511 100%
+    );
+}
+
+
 /*
-  Неоновая тёмная тема:
-  чёрный + графит + зелёный.
+  Более детальная тёмная версия.
+
+  Мы не делаем карту почти чёрной.
+
+  Дороги остаются серо-синими,
+  здания — серо-коричневыми,
+  парки — зелёными,
+  вода — холодно-синей.
 */
 
 #map.darkMap .leaflet-tile-pane{
   filter:
     invert(1)
-    grayscale(.72)
-    sepia(.30)
-    hue-rotate(78deg)
-    saturate(2.15)
-    brightness(.54)
-    contrast(1.42);
+    hue-rotate(168deg)
+    saturate(.82)
+    brightness(.80)
+    contrast(1.16)
+    sepia(.12);
+
+  opacity:.98;
 }
+
+
+/*
+  Очень лёгкий тёмный слой,
+  чтобы карта не становилась слишком светлой.
+*/
+
+#map.darkMap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:240;
+  pointer-events:none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(5,15,10,.10),
+      rgba(5,12,8,.05)
+    );
+
+  mix-blend-mode:multiply;
+}
+
+
+/*
+  Очень слабый неоново-зелёный оттенок.
+*/
 
 #map.darkMap::after{
   content:"";
@@ -89,25 +140,40 @@ body{
   inset:0;
   z-index:250;
   pointer-events:none;
+
   background:
     linear-gradient(
-      rgba(0,255,110,.045),
-      rgba(0,0,0,.09)
+      rgba(0,255,110,.025),
+      rgba(0,0,0,.01)
     );
+
   mix-blend-mode:screen;
+}
+
+
+/* =========================
+   LIGHT MAP
+   ========================= */
+
+#map.lightMap{
+  background:#eef3ef;
 }
 
 #map.lightMap .leaflet-tile-pane{
   filter:none;
+  opacity:1;
 }
 
+#map.lightMap::before,
 #map.lightMap::after{
   display:none;
 }
 
+
 .leaflet-control-zoom{
   display:none!important;
 }
+
 
 .leaflet-control-attribution{
   font-size:8px!important;
@@ -115,9 +181,11 @@ body{
   color:#8fa299!important;
 }
 
+
 .leaflet-control-attribution a{
   color:#b8c9c0!important;
 }
+
 
 /* =========================
    TOP
@@ -131,6 +199,7 @@ body{
   right:13px;
 }
 
+
 .search{
   background:#0b120ef1;
   border:1px solid #26342b;
@@ -140,6 +209,7 @@ body{
   box-shadow:0 12px 35px #0008;
 }
 
+
 .routeRow{
   display:grid;
   grid-template-columns:16px 1fr;
@@ -147,14 +217,17 @@ body{
   align-items:center;
 }
 
+
 .routeRow+.routeRow{
   margin-top:5px;
 }
+
 
 .pointSearchWrap{
   position:relative;
   min-width:0;
 }
+
 
 .pointSearchInput{
   width:100%;
@@ -167,14 +240,17 @@ body{
   font-size:13px;
 }
 
+
 .pointSearchInput::placeholder{
   color:#74857c;
 }
+
 
 .pointSearchInput:focus{
   border-color:var(--green);
   box-shadow:0 0 0 1px #49ed8d33;
 }
+
 
 /* =========================
    SEARCH RESULTS
@@ -196,9 +272,11 @@ body{
   padding:5px;
 }
 
+
 .pointResults.open{
   display:block;
 }
+
 
 .pointResult{
   padding:9px 10px;
@@ -206,10 +284,12 @@ body{
   cursor:pointer;
 }
 
+
 .pointResult:hover,
 .pointResult.active{
   background:#16261c;
 }
+
 
 .pointResult strong{
   display:block;
@@ -218,12 +298,14 @@ body{
   color:#fff;
 }
 
+
 .pointResult span{
   display:block;
   margin-top:2px;
   font-size:9px;
   color:#90a098;
 }
+
 
 .pointResultsEmpty,
 .pointResultsCount,
@@ -233,16 +315,19 @@ body{
   color:#91a098;
 }
 
+
 .pointResultsCount{
   border-bottom:1px solid #213027;
   margin-bottom:4px;
 }
+
 
 .remoteHint{
   color:#62e99a;
   border-top:1px solid #213027;
   margin-top:4px;
 }
+
 
 /* =========================
    CONTROLS
@@ -255,9 +340,11 @@ body{
   border:2px solid var(--green);
 }
 
+
 .dot.end{
   border-color:#aab4af;
 }
+
 
 select{
   width:100%;
@@ -270,11 +357,13 @@ select{
   font-size:12.5px;
 }
 
+
 .actions{
   display:flex;
   gap:7px;
   margin-top:6px;
 }
+
 
 .btn{
   border:1px solid #2b3931;
@@ -286,6 +375,7 @@ select{
   font-size:12px;
 }
 
+
 .btn.green{
   flex:1;
   background:var(--green);
@@ -293,6 +383,7 @@ select{
   border-color:var(--green);
   font-weight:800;
 }
+
 
 .chips{
   display:flex;
@@ -302,9 +393,11 @@ select{
   scrollbar-width:none;
 }
 
+
 .chips::-webkit-scrollbar{
   display:none;
 }
+
 
 .chip{
   flex:0 0 auto;
@@ -317,12 +410,14 @@ select{
   cursor:pointer;
 }
 
+
 .chip.on{
   background:var(--green);
   color:#06110a;
   border-color:var(--green);
   font-weight:800;
 }
+
 
 /* =========================
    ZOOM
@@ -338,6 +433,7 @@ select{
   gap:9px;
 }
 
+
 .fab{
   width:46px;
   height:46px;
@@ -349,6 +445,7 @@ select{
   cursor:pointer;
   box-shadow:0 7px 22px #0008;
 }
+
 
 .hint{
   position:absolute;
@@ -363,6 +460,7 @@ select{
   font-size:10px;
 }
 
+
 /* =========================
    SHEET
    ========================= */
@@ -374,12 +472,20 @@ select{
   right:0;
   bottom:0;
   min-height:255px;
-  background:linear-gradient(180deg,#0d1510fa,#070c09);
+
+  background:
+    linear-gradient(
+      180deg,
+      #0d1510fa,
+      #070c09
+    );
+
   border-radius:27px 27px 0 0;
   border-top:1px solid #26342b;
   box-shadow:0 -18px 60px #000a;
   padding:10px 14px 18px;
 }
+
 
 .handle{
   width:44px;
@@ -389,6 +495,7 @@ select{
   margin:0 auto 11px;
 }
 
+
 .summary{
   display:grid;
   grid-template-columns:1fr auto;
@@ -396,10 +503,12 @@ select{
   align-items:center;
 }
 
+
 .summary h3{
   margin:0 0 4px;
   font-size:17px;
 }
+
 
 .summary p{
   margin:0;
@@ -408,19 +517,23 @@ select{
   line-height:1.25;
 }
 
+
 .stats{
   text-align:right;
 }
+
 
 .stats strong{
   display:block;
   font-size:18px;
 }
 
+
 .stats span{
   font-size:11px;
   color:#cad3ce;
 }
+
 
 /* =========================
    CARDS
@@ -434,9 +547,11 @@ select{
   margin-top:12px;
 }
 
+
 .cards::-webkit-scrollbar{
   display:none;
 }
+
 
 .card{
   min-width:103px;
@@ -447,15 +562,18 @@ select{
   cursor:pointer;
 }
 
+
 .card.active{
   border-color:var(--green);
   box-shadow:0 0 0 1px #49ed8d38;
 }
 
+
 .card .walk{
   font-size:11px;
   color:#c2ccc6;
 }
+
 
 .card .price{
   font-size:18px;
@@ -463,10 +581,12 @@ select{
   margin:4px 0;
 }
 
+
 .card .eta{
   font-size:11px;
   color:var(--muted);
 }
+
 
 /* =========================
    SAVINGS
@@ -480,9 +600,17 @@ select{
   padding:11px 12px;
   border:1px solid #176c3a;
   border-radius:14px;
-  background:linear-gradient(90deg,#0d2e19,#103920);
+
+  background:
+    linear-gradient(
+      90deg,
+      #0d2e19,
+      #103920
+    );
+
   cursor:pointer;
 }
+
 
 .savingsIcon{
   width:34px;
@@ -496,16 +624,19 @@ select{
   font-size:19px;
 }
 
+
 .savingsText{
   min-width:0;
   flex:1;
 }
+
 
 .savingsText strong{
   display:block;
   font-size:13px;
   margin-bottom:2px;
 }
+
 
 .savingsText span{
   display:block;
@@ -514,10 +645,12 @@ select{
   line-height:1.25;
 }
 
+
 .savingsArrow{
   font-size:22px;
   color:#d6dfda;
 }
+
 
 .note{
   margin-top:8px;
@@ -525,6 +658,7 @@ select{
   font-size:9px;
   line-height:1.3;
 }
+
 
 /* =========================
    MAP LABELS
@@ -541,14 +675,19 @@ select{
   box-shadow:0 6px 18px #0009;
 }
 
+
 .taxiLabel.best{
   border-color:var(--green);
-  box-shadow:0 0 0 2px #49ed8d32,0 6px 18px #0009;
+  box-shadow:
+    0 0 0 2px #49ed8d32,
+    0 6px 18px #0009;
 }
+
 
 .taxiLabel b{
   font-size:13px;
 }
+
 
 .taxiLabel small{
   display:block;
@@ -556,6 +695,7 @@ select{
   font-size:9px;
   margin-top:1px;
 }
+
 
 .pointLabel{
   background:#08110c;
@@ -568,13 +708,16 @@ select{
   font-size:10px;
 }
 
+
 .pointLabel.start{
   border-color:var(--green);
 }
 
+
 .pointLabel.end{
   border-color:#d0d7d3;
 }
+
 
 /* =========================
    FILTERS
@@ -591,9 +734,11 @@ select{
   overflow:auto;
 }
 
+
 .filters.open{
   transform:translateY(0);
 }
+
 
 .fhead{
   display:flex;
@@ -601,9 +746,11 @@ select{
   justify-content:space-between;
 }
 
+
 .fhead h2{
   margin:0;
 }
+
 
 .close{
   width:38px;
@@ -616,20 +763,24 @@ select{
   cursor:pointer;
 }
 
+
 .section{
   padding:15px 0;
   border-bottom:1px solid #1d2a22;
 }
 
+
 .section h4{
   margin:0 0 10px;
 }
+
 
 .segs{
   display:flex;
   gap:7px;
   flex-wrap:wrap;
 }
+
 
 .segs button{
   border:1px solid #2b3931;
@@ -639,12 +790,14 @@ select{
   padding:8px 10px;
 }
 
+
 .segs button.on{
   background:var(--green);
   color:#06110a;
   border-color:var(--green);
   font-weight:800;
 }
+
 
 .toggleRow{
   display:flex;
@@ -653,6 +806,7 @@ select{
   padding:8px 0;
 }
 
+
 .toggle{
   width:46px;
   height:27px;
@@ -660,6 +814,7 @@ select{
   background:#2b3831;
   padding:3px;
 }
+
 
 .toggle i{
   display:block;
@@ -670,13 +825,16 @@ select{
   transition:.2s;
 }
 
+
 .toggle.on{
   background:var(--green);
 }
 
+
 .toggle.on i{
   transform:translateX(19px);
 }
+
 
 /* =========================
    LOADER / TOAST
@@ -692,9 +850,11 @@ select{
   place-items:center;
 }
 
+
 .loader.show{
   display:grid;
 }
+
 
 .loader div{
   background:#0d1510;
@@ -703,6 +863,7 @@ select{
   border-radius:15px;
   font-weight:700;
 }
+
 
 .toast{
   position:absolute;
@@ -722,10 +883,12 @@ select{
   pointer-events:none;
 }
 
+
 .toast.show{
   opacity:1;
   transform:translate(-50%,0);
 }
+
 
 /* =========================
    DESKTOP
@@ -737,6 +900,7 @@ select{
     display:block;
   }
 
+
   .app{
     width:100vw;
     height:100vh;
@@ -745,9 +909,11 @@ select{
     box-shadow:none;
   }
 
+
   #map{
     inset:0;
   }
+
 
   .top{
     top:20px;
@@ -756,20 +922,24 @@ select{
     width:390px;
   }
 
+
   .search{
     border-radius:20px;
     padding:12px;
     box-shadow:0 16px 42px #0009;
   }
 
+
   .routeRow{
     grid-template-columns:16px minmax(0,1fr);
     gap:10px;
   }
 
+
   .routeRow+.routeRow{
     margin-top:8px;
   }
+
 
   .pointSearchInput{
     min-height:42px;
@@ -777,15 +947,18 @@ select{
     font-size:14px;
   }
 
+
   .actions{
     gap:9px;
     margin-top:9px;
   }
 
+
   .btn{
     padding:10px 12px;
     font-size:13px;
   }
+
 
   .chips{
     margin-top:10px;
@@ -794,14 +967,17 @@ select{
     overflow:visible;
   }
 
+
   .chip{
     padding:8px 11px;
     font-size:12px;
   }
 
+
   .pointResults{
     max-height:320px;
   }
+
 
   .sheet{
     left:20px;
@@ -818,17 +994,21 @@ select{
     padding:14px 16px 18px;
   }
 
+
   .handle{
     display:none;
   }
+
 
   .summary h3{
     font-size:19px;
   }
 
+
   .stats strong{
     font-size:20px;
   }
+
 
   .cards{
     flex-direction:column;
@@ -837,22 +1017,30 @@ select{
     margin-top:14px;
   }
 
+
   .card{
     width:100%;
     min-width:0;
+
     display:grid;
-    grid-template-columns:1fr auto;
+
+    grid-template-columns:
+      1fr auto;
+
     grid-template-areas:
       "walk price"
       "eta price";
+
     align-items:center;
     column-gap:14px;
     padding:11px 12px;
   }
 
+
   .card .walk{
     grid-area:walk;
   }
+
 
   .card .price{
     grid-area:price;
@@ -860,15 +1048,18 @@ select{
     font-size:19px;
   }
 
+
   .card .eta{
     grid-area:eta;
   }
+
 
   .zoom{
     right:24px;
     bottom:24px;
     gap:10px;
   }
+
 
   .hint{
     left:430px;
@@ -877,23 +1068,38 @@ select{
     font-size:11px;
   }
 
+
   .filters{
     width:420px;
     right:auto;
     left:0;
     top:0;
     bottom:0;
-    inset:auto auto 0 0;
+
+    inset:
+      auto auto 0 0;
+
     height:100vh;
-    transform:translateX(-100%);
-    padding:30px 22px 24px;
-    border-right:1px solid #26342b;
-    box-shadow:18px 0 55px #0009;
+
+    transform:
+      translateX(-100%);
+
+    padding:
+      30px 22px 24px;
+
+    border-right:
+      1px solid #26342b;
+
+    box-shadow:
+      18px 0 55px #0009;
   }
 
+
   .filters.open{
-    transform:translateX(0);
+    transform:
+      translateX(0);
   }
+
 
   .toast{
     top:24px;
@@ -901,10 +1107,13 @@ select{
     max-width:420px;
   }
 
+
   .loader{
     padding-left:410px;
   }
+
 }
+
 
 @media(min-width:1400px){
 
@@ -914,27 +1123,35 @@ select{
     width:410px;
   }
 
+
   .sheet{
     top:260px;
   }
 
+
   .hint{
     left:460px;
   }
+
 }
 
 </style>
 </head>
 
+
 <body>
 
 <div class="app">
 
+
   <div id="map"></div>
+
 
   <div class="top">
 
+
     <div class="search">
+
 
       <div class="routeRow">
 
@@ -950,12 +1167,20 @@ select{
             placeholder="Введите улицу или адрес"
           >
 
-          <input id="fromSelect" type="hidden">
+          <input
+            id="fromSelect"
+            type="hidden"
+          >
 
-          <div id="fromResults" class="pointResults"></div>
+          <div
+            id="fromResults"
+            class="pointResults"
+          ></div>
 
         </div>
+
       </div>
+
 
       <div class="routeRow">
 
@@ -971,20 +1196,34 @@ select{
             placeholder="Введите улицу или адрес"
           >
 
-          <input id="toSelect" type="hidden">
+          <input
+            id="toSelect"
+            type="hidden"
+          >
 
-          <div id="toResults" class="pointResults"></div>
+          <div
+            id="toResults"
+            class="pointResults"
+          ></div>
 
         </div>
+
       </div>
+
 
       <div class="actions">
 
-        <button class="btn" id="swapBtn">
+        <button
+          class="btn"
+          id="swapBtn"
+        >
           ⇅ Поменять
         </button>
 
-        <button class="btn green" id="routeBtn">
+        <button
+          class="btn green"
+          id="routeBtn"
+        >
           Построить маршрут
         </button>
 
@@ -992,25 +1231,45 @@ select{
 
     </div>
 
+
     <div class="chips">
 
-      <button class="chip on" id="timeChip">
+      <button
+        class="chip on"
+        id="timeChip"
+      >
         ◷ Сейчас
       </button>
 
-      <button class="chip" id="passChip">
+
+      <button
+        class="chip"
+        id="passChip"
+      >
         👤 1
       </button>
 
-      <button class="chip" id="classChip">
+
+      <button
+        class="chip"
+        id="classChip"
+      >
         🚕 Эконом
       </button>
 
-      <button class="chip" id="filterBtn">
+
+      <button
+        class="chip"
+        id="filterBtn"
+      >
         ☷ Фильтры
       </button>
 
-      <button class="chip" id="themeBtn">
+
+      <button
+        class="chip"
+        id="themeBtn"
+      >
         ☀️ Светлая
       </button>
 
@@ -1018,29 +1277,42 @@ select{
 
   </div>
 
+
   <div class="zoom">
 
-    <button class="fab" id="zoomIn">
+    <button
+      class="fab"
+      id="zoomIn"
+    >
       ＋
     </button>
 
-    <button class="fab" id="zoomOut">
+    <button
+      class="fab"
+      id="zoomOut"
+    >
       −
     </button>
 
-    <button class="fab" id="fitBtn">
+    <button
+      class="fab"
+      id="fitBtn"
+    >
       ⌗
     </button>
 
   </div>
 
+
   <div class="hint">
     Нажмите на любое место карты, чтобы построить маршрут туда
   </div>
 
+
   <div class="sheet">
 
     <div class="handle"></div>
+
 
     <div class="summary">
 
@@ -1056,6 +1328,7 @@ select{
 
       </div>
 
+
       <div class="stats">
 
         <strong id="distance">
@@ -1070,13 +1343,22 @@ select{
 
     </div>
 
-    <div class="cards" id="cards"></div>
 
-    <div class="savings" id="savingsCard">
+    <div
+      class="cards"
+      id="cards"
+    ></div>
+
+
+    <div
+      class="savings"
+      id="savingsCard"
+    >
 
       <div class="savingsIcon">
         ●
       </div>
+
 
       <div class="savingsText">
 
@@ -1090,11 +1372,13 @@ select{
 
       </div>
 
+
       <div class="savingsArrow">
         ›
       </div>
 
     </div>
+
 
     <button
       class="btn green"
@@ -1104,14 +1388,20 @@ select{
       Выбрать лучшую точку посадки
     </button>
 
+
     <div class="note">
-      Адреса можно искать по Москве через OpenStreetMap.
+      Можно искать адреса по Москве или нажать на любую точку карты.
       Цены и время подачи — демонстрационные.
     </div>
 
   </div>
 
-  <div class="filters" id="filters">
+
+  <div
+    class="filters"
+    id="filters"
+  >
+
 
     <div class="fhead">
 
@@ -1119,11 +1409,15 @@ select{
         Фильтры
       </h2>
 
-      <button class="close" id="closeFilters">
+      <button
+        class="close"
+        id="closeFilters"
+      >
         ×
       </button>
 
     </div>
+
 
     <div class="section">
 
@@ -1131,7 +1425,10 @@ select{
         Время
       </h4>
 
-      <div class="segs" data-kind="time">
+      <div
+        class="segs"
+        data-kind="time"
+      >
 
         <button class="on">
           Сейчас
@@ -1153,13 +1450,17 @@ select{
 
     </div>
 
+
     <div class="section">
 
       <h4>
         Пассажиры
       </h4>
 
-      <div class="segs" data-kind="pass">
+      <div
+        class="segs"
+        data-kind="pass"
+      >
 
         <button class="on">
           1
@@ -1181,6 +1482,7 @@ select{
 
     </div>
 
+
     <div class="section">
 
       <h4>
@@ -1189,21 +1491,37 @@ select{
 
       <select id="classSelect">
 
-        <option>Эконом</option>
-        <option>Комфорт</option>
-        <option>Комфорт+</option>
-        <option>Бизнес</option>
-        <option>Минивэн</option>
+        <option>
+          Эконом
+        </option>
+
+        <option>
+          Комфорт
+        </option>
+
+        <option>
+          Комфорт+
+        </option>
+
+        <option>
+          Бизнес
+        </option>
+
+        <option>
+          Минивэн
+        </option>
 
       </select>
 
     </div>
+
 
     <div class="section">
 
       <h4>
         Дополнительно
       </h4>
+
 
       <div class="toggleRow">
 
@@ -1217,6 +1535,7 @@ select{
 
       </div>
 
+
       <div class="toggleRow">
 
         <span>
@@ -1228,6 +1547,7 @@ select{
         </div>
 
       </div>
+
 
       <div class="toggleRow">
 
@@ -1243,6 +1563,7 @@ select{
 
     </div>
 
+
     <button
       class="btn green"
       style="width:100%;margin-top:18px"
@@ -1253,7 +1574,11 @@ select{
 
   </div>
 
-  <div class="loader" id="loader">
+
+  <div
+    class="loader"
+    id="loader"
+  >
 
     <div>
       Строю маршрут по Москве…
@@ -1261,12 +1586,18 @@ select{
 
   </div>
 
-  <div class="toast" id="toast"></div>
+
+  <div
+    class="toast"
+    id="toast"
+  ></div>
+
 
 </div>
 
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
 <script>
 
@@ -1276,175 +1607,441 @@ select{
 
 const POINTS={
 
+
   letovo:{
-    name:"Школа Летово",
-    address:"Зимёнковская улица, 3, Москва, Коммунарка",
-    subtitle:"Зимёнковская улица, 3",
-    aliases:"зименковская зимёнковская улица дом 3 зименковская дом 3 летово школа",
-    lat:55.55754,
-    lng:37.42267
+
+    name:
+      "Школа Летово",
+
+    address:
+      "Зимёнковская улица, 3, Москва, Коммунарка",
+
+    subtitle:
+      "Зимёнковская улица, 3",
+
+    aliases:
+      "зименковская зимёнковская улица дом 3 зименковская дом 3 летово школа",
+
+    lat:
+      55.55754,
+
+    lng:
+      37.42267
+
   },
+
 
   red_square:{
-    name:"Красная площадь",
-    address:"Красная площадь, Москва",
-    subtitle:"Красная площадь",
-    aliases:"кремль центр москвы",
-    lat:55.75393,
-    lng:37.62080
+
+    name:
+      "Красная площадь",
+
+    address:
+      "Красная площадь, Москва",
+
+    subtitle:
+      "Красная площадь",
+
+    aliases:
+      "кремль центр москвы",
+
+    lat:
+      55.75393,
+
+    lng:
+      37.62080
+
   },
+
 
   gorky:{
-    name:"Парк Горького",
-    address:"Крымский Вал, 9, Москва",
-    subtitle:"Крымский Вал, 9",
-    aliases:"цпкио горького",
-    lat:55.72981,
-    lng:37.60112
+
+    name:
+      "Парк Горького",
+
+    address:
+      "Крымский Вал, 9, Москва",
+
+    subtitle:
+      "Крымский Вал, 9",
+
+    aliases:
+      "цпкио горького",
+
+    lat:
+      55.72981,
+
+    lng:
+      37.60112
+
   },
+
 
   moscow_city:{
-    name:"Москва-Сити",
-    address:"Пресненская набережная, 8, Москва",
-    subtitle:"Пресненская набережная, 8",
-    aliases:"moscow city",
-    lat:55.74983,
-    lng:37.53732
+
+    name:
+      "Москва-Сити",
+
+    address:
+      "Пресненская набережная, 8, Москва",
+
+    subtitle:
+      "Пресненская набережная, 8",
+
+    aliases:
+      "moscow city",
+
+    lat:
+      55.74983,
+
+    lng:
+      37.53732
+
   },
+
 
   vdnkh:{
-    name:"ВДНХ",
-    address:"проспект Мира, 119, Москва",
-    subtitle:"проспект Мира, 119",
-    aliases:"выставка достижений народного хозяйства",
-    lat:55.82988,
-    lng:37.63261
+
+    name:
+      "ВДНХ",
+
+    address:
+      "проспект Мира, 119, Москва",
+
+    subtitle:
+      "проспект Мира, 119",
+
+    aliases:
+      "выставка достижений народного хозяйства",
+
+    lat:
+      55.82988,
+
+    lng:
+      37.63261
+
   },
+
 
   tretyakov:{
-    name:"Третьяковская галерея",
-    address:"Лаврушинский переулок, 10, Москва",
-    subtitle:"Лаврушинский переулок, 10",
-    aliases:"третьяковка",
-    lat:55.74144,
-    lng:37.62010
+
+    name:
+      "Третьяковская галерея",
+
+    address:
+      "Лаврушинский переулок, 10, Москва",
+
+    subtitle:
+      "Лаврушинский переулок, 10",
+
+    aliases:
+      "третьяковка",
+
+    lat:
+      55.74144,
+
+    lng:
+      37.62010
+
   },
+
 
   kievsky:{
-    name:"Киевский вокзал",
-    address:"площадь Киевского Вокзала, 1, Москва",
-    subtitle:"площадь Киевского Вокзала, 1",
-    aliases:"киевский",
-    lat:55.74359,
-    lng:37.56572
+
+    name:
+      "Киевский вокзал",
+
+    address:
+      "площадь Киевского Вокзала, 1, Москва",
+
+    subtitle:
+      "площадь Киевского Вокзала, 1",
+
+    aliases:
+      "киевский",
+
+    lat:
+      55.74359,
+
+    lng:
+      37.56572
+
   },
+
 
   luzhniki:{
-    name:"Лужники",
-    address:"улица Лужники, 24, Москва",
-    subtitle:"улица Лужники, 24",
-    aliases:"стадион",
-    lat:55.71577,
-    lng:37.55372
+
+    name:
+      "Лужники",
+
+    address:
+      "улица Лужники, 24, Москва",
+
+    subtitle:
+      "улица Лужники, 24",
+
+    aliases:
+      "стадион",
+
+    lat:
+      55.71577,
+
+    lng:
+      37.55372
+
   },
+
 
   bolshoi:{
-    name:"Большой театр",
-    address:"Театральная площадь, 1, Москва",
-    subtitle:"Театральная площадь, 1",
-    aliases:"театр",
-    lat:55.76013,
-    lng:37.61865
+
+    name:
+      "Большой театр",
+
+    address:
+      "Театральная площадь, 1, Москва",
+
+    subtitle:
+      "Театральная площадь, 1",
+
+    aliases:
+      "театр",
+
+    lat:
+      55.76013,
+
+    lng:
+      37.61865
+
   },
+
 
   msu:{
-    name:"МГУ",
-    address:"Ленинские горы, 1, Москва",
-    subtitle:"Ленинские горы, 1",
-    aliases:"московский государственный университет",
-    lat:55.70330,
-    lng:37.53005
+
+    name:
+      "МГУ",
+
+    address:
+      "Ленинские горы, 1, Москва",
+
+    subtitle:
+      "Ленинские горы, 1",
+
+    aliases:
+      "московский государственный университет",
+
+    lat:
+      55.70330,
+
+    lng:
+      37.53005
+
   },
+
 
   arbat:{
-    name:"Старый Арбат",
-    address:"улица Арбат, Москва",
-    subtitle:"улица Арбат",
-    aliases:"арбат",
-    lat:55.74906,
-    lng:37.59133
+
+    name:
+      "Старый Арбат",
+
+    address:
+      "улица Арбат, Москва",
+
+    subtitle:
+      "улица Арбат",
+
+    aliases:
+      "арбат",
+
+    lat:
+      55.74906,
+
+    lng:
+      37.59133
+
   },
+
 
   zaryadye:{
-    name:"Парк Зарядье",
-    address:"Варварка, 6, Москва",
-    subtitle:"Варварка, 6",
-    aliases:"зарядье",
-    lat:55.75152,
-    lng:37.62832
+
+    name:
+      "Парк Зарядье",
+
+    address:
+      "Варварка, 6, Москва",
+
+    subtitle:
+      "Варварка, 6",
+
+    aliases:
+      "зарядье",
+
+    lat:
+      55.75152,
+
+    lng:
+      37.62832
+
   },
+
 
   patriarshie:{
-    name:"Патриаршие пруды",
-    address:"Малая Бронная улица, Москва",
-    subtitle:"Малая Бронная улица",
-    aliases:"патрики",
-    lat:55.76366,
-    lng:37.59268
+
+    name:
+      "Патриаршие пруды",
+
+    address:
+      "Малая Бронная улица, Москва",
+
+    subtitle:
+      "Малая Бронная улица",
+
+    aliases:
+      "патрики",
+
+    lat:
+      55.76366,
+
+    lng:
+      37.59268
+
   },
+
 
   khodynka:{
-    name:"Ходынское поле",
-    address:"Ходынский бульвар, 10Б, Москва",
-    subtitle:"Ходынский бульвар, 10Б",
-    aliases:"ходынка",
-    lat:55.79085,
-    lng:37.53118
+
+    name:
+      "Ходынское поле",
+
+    address:
+      "Ходынский бульвар, 10Б, Москва",
+
+    subtitle:
+      "Ходынский бульвар, 10Б",
+
+    aliases:
+      "ходынка",
+
+    lat:
+      55.79085,
+
+    lng:
+      37.53118
+
   },
+
 
   kolomenskoye:{
-    name:"Коломенское",
-    address:"проспект Андропова, 39, Москва",
-    subtitle:"проспект Андропова, 39",
-    aliases:"музей заповедник",
-    lat:55.66783,
-    lng:37.67074
+
+    name:
+      "Коломенское",
+
+    address:
+      "проспект Андропова, 39, Москва",
+
+    subtitle:
+      "проспект Андропова, 39",
+
+    aliases:
+      "музей заповедник",
+
+    lat:
+      55.66783,
+
+    lng:
+      37.67074
+
   },
+
 
   severny_port:{
-    name:"Северный речной вокзал",
-    address:"Ленинградское шоссе, 51, Москва",
-    subtitle:"Ленинградское шоссе, 51",
-    aliases:"речной вокзал",
-    lat:55.85166,
-    lng:37.46689
+
+    name:
+      "Северный речной вокзал",
+
+    address:
+      "Ленинградское шоссе, 51, Москва",
+
+    subtitle:
+      "Ленинградское шоссе, 51",
+
+    aliases:
+      "речной вокзал",
+
+    lat:
+      55.85166,
+
+    lng:
+      37.46689
+
   },
+
 
   dream_island:{
-    name:"Остров Мечты",
-    address:"проспект Андропова, 1, Москва",
-    subtitle:"проспект Андропова, 1",
-    aliases:"dream island",
-    lat:55.69415,
-    lng:37.67539
+
+    name:
+      "Остров Мечты",
+
+    address:
+      "проспект Андропова, 1, Москва",
+
+    subtitle:
+      "проспект Андропова, 1",
+
+    aliases:
+      "dream island",
+
+    lat:
+      55.69415,
+
+    lng:
+      37.67539
+
   },
+
 
   ostankino:{
-    name:"Останкинская башня",
-    address:"улица Академика Королёва, 15, Москва",
-    subtitle:"улица Академика Королёва, 15",
-    aliases:"останкино телебашня",
-    lat:55.81968,
-    lng:37.61166
+
+    name:
+      "Останкинская башня",
+
+    address:
+      "улица Академика Королёва, 15, Москва",
+
+    subtitle:
+      "улица Академика Королёва, 15",
+
+    aliases:
+      "останкино телебашня",
+
+    lat:
+      55.81968,
+
+    lng:
+      37.61166
+
   },
 
+
   tsaritsyno:{
-    name:"Царицыно",
-    address:"Дольская улица, 1, Москва",
-    subtitle:"Дольская улица, 1",
-    aliases:"музей заповедник",
-    lat:55.61552,
-    lng:37.68202
+
+    name:
+      "Царицыно",
+
+    address:
+      "Дольская улица, 1, Москва",
+
+    subtitle:
+      "Дольская улица, 1",
+
+    aliases:
+      "музей заповедник",
+
+    lat:
+      55.61552,
+
+    lng:
+      37.68202
+
   }
 
 };
@@ -1457,97 +2054,185 @@ const POINTS={
 const MAP_CLICK_DESTINATION_ID=
   "__map_click_destination__";
 
+
 const fromSelect=
-  document.getElementById("fromSelect");
+  document.getElementById(
+    "fromSelect"
+  );
+
 
 const toSelect=
-  document.getElementById("toSelect");
+  document.getElementById(
+    "toSelect"
+  );
+
 
 const fromSearch=
-  document.getElementById("fromSearch");
+  document.getElementById(
+    "fromSearch"
+  );
+
 
 const toSearch=
-  document.getElementById("toSearch");
+  document.getElementById(
+    "toSearch"
+  );
+
 
 const fromResults=
-  document.getElementById("fromResults");
+  document.getElementById(
+    "fromResults"
+  );
+
 
 const toResults=
-  document.getElementById("toResults");
+  document.getElementById(
+    "toResults"
+  );
+
 
 const cards=
-  document.getElementById("cards");
+  document.getElementById(
+    "cards"
+  );
+
 
 const summaryText=
-  document.getElementById("summaryText");
+  document.getElementById(
+    "summaryText"
+  );
+
 
 const distanceEl=
-  document.getElementById("distance");
+  document.getElementById(
+    "distance"
+  );
+
 
 const durationEl=
-  document.getElementById("duration");
+  document.getElementById(
+    "duration"
+  );
+
 
 const loader=
-  document.getElementById("loader");
+  document.getElementById(
+    "loader"
+  );
+
 
 const toast=
-  document.getElementById("toast");
+  document.getElementById(
+    "toast"
+  );
 
 
 const FEATURED_POINT_IDS=[
+
   "letovo",
+
   "red_square",
+
   "gorky",
+
   "moscow_city",
+
   "vdnkh",
+
   "msu",
+
   "arbat",
+
   "zaryadye",
+
   "luzhniki",
+
   "tsaritsyno"
+
 ];
 
 
 /* =========================
-   SEARCH HELPERS
+   SEARCH
    ========================= */
 
-function normalizeSearchText(value){
+function normalizeSearchText(
+  value
+){
 
-  return String(value||"")
-    .toLowerCase()
-    .replaceAll("ё","е")
-    .replace(/[.,]/g," ")
-    .replace(/\bдом\b/g," ")
-    .replace(/\s+/g," ")
-    .trim();
+  return String(
+    value||""
+  )
+
+  .toLowerCase()
+
+  .replaceAll(
+    "ё",
+    "е"
+  )
+
+  .replace(
+    /[.,]/g,
+    " "
+  )
+
+  .replace(
+    /\bдом\b/g,
+    " "
+  )
+
+  .replace(
+    /\s+/g,
+    " "
+  )
+
+  .trim();
 
 }
 
 
-function pointSearchText(id,p){
+function pointSearchText(
+  id,
+  p
+){
 
   return normalizeSearchText(
+
     `${p.name} ${p.address||""} ${p.subtitle||""} ${p.aliases||""} ${id}`
+
   );
 
 }
 
 
-function findLocalPoints(query){
+function findLocalPoints(
+  query
+){
 
   const q=
-    normalizeSearchText(query);
+    normalizeSearchText(
+      query
+    );
 
 
   if(!q){
 
     return FEATURED_POINT_IDS
-      .map(id=>({
-        id,
-        point:POINTS[id]
-      }))
-      .filter(x=>x.point);
+
+      .map(
+        id=>({
+
+          id,
+
+          point:
+            POINTS[id]
+
+        })
+      )
+
+      .filter(
+        x=>x.point
+      );
 
   }
 
@@ -1559,29 +2244,43 @@ function findLocalPoints(query){
 
 
   return Object
-    .entries(POINTS)
+    .entries(
+      POINTS
+    )
 
     .filter(
       ([id,p])=>
 
         !p.remote &&
+
         !p.dynamic &&
 
         tokens.every(
-          token=>
-            pointSearchText(id,p)
-            .includes(token)
+          t=>
+            pointSearchText(
+              id,
+              p
+            )
+            .includes(
+              t
+            )
         )
     )
 
     .map(
       ([id,point])=>({
+
         id,
+
         point
+
       })
     )
 
-    .slice(0,30);
+    .slice(
+      0,
+      30
+    );
 
 }
 
@@ -1639,12 +2338,14 @@ function setPointSelection(
   if(trigger){
 
     hidden.dispatchEvent(
+
       new Event(
         "change",
         {
           bubbles:true
         }
       )
+
     );
 
   }
@@ -1656,7 +2357,9 @@ function setPointSelection(
    LOCAL RESULTS
    ========================= */
 
-function renderPointResults(kind){
+function renderPointResults(
+  kind
+){
 
   const input=
     kind==="from"
@@ -1692,7 +2395,9 @@ function renderPointResults(kind){
 
   count.textContent=
     input.value.trim()
+
       ?`Локальных совпадений: ${matches.length}`
+
       :"Популярные места";
 
 
@@ -1767,6 +2472,7 @@ function renderPointResults(kind){
 
           e.preventDefault();
 
+
           setPointSelection(
             kind,
             id,
@@ -1800,7 +2506,7 @@ function renderPointResults(kind){
 
 
     hint.textContent=
-      "Не видите нужный адрес? Нажмите Enter — найду его по Москве.";
+      "Не видите нужный адрес? Нажмите Enter — найду его по всей Москве.";
 
 
     results.appendChild(
@@ -1818,7 +2524,7 @@ function renderPointResults(kind){
 
 
 /* =========================
-   FORWARD GEOCODING
+   NOMINATIM QUEUE
    ========================= */
 
 let lastGeocodeAt=
@@ -1830,6 +2536,10 @@ let geocodeChain=
 
 
 const geocodeCache=
+  new Map();
+
+
+const reverseCache=
   new Map();
 
 
@@ -1846,7 +2556,9 @@ function sleep(ms){
 }
 
 
-function queuedNominatimRequest(task){
+function queuedNominatimRequest(
+  task
+){
 
   const job=
     async()=>{
@@ -1899,10 +2611,18 @@ function queuedNominatimRequest(task){
 }
 
 
-async function geocodeMoscow(query){
+/* =========================
+   ADDRESS SEARCH
+   ========================= */
+
+async function geocodeMoscow(
+  query
+){
 
   const q=
-    normalizeSearchText(query);
+    normalizeSearchText(
+      query
+    );
 
 
   if(!q){
@@ -1911,7 +2631,9 @@ async function geocodeMoscow(query){
 
 
   if(
-    geocodeCache.has(q)
+    geocodeCache.has(
+      q
+    )
   ){
 
     return geocodeCache.get(
@@ -1923,6 +2645,7 @@ async function geocodeMoscow(query){
 
   const data=
     await queuedNominatimRequest(
+
       async()=>{
 
         const params=
@@ -1963,10 +2686,12 @@ async function geocodeMoscow(query){
             params.toString(),
 
             {
+
               headers:{
                 Accept:
                   "application/json"
               }
+
             }
 
           );
@@ -1986,6 +2711,7 @@ async function geocodeMoscow(query){
         return response.json();
 
       }
+
     );
 
 
@@ -2001,7 +2727,7 @@ async function geocodeMoscow(query){
 
 
 /* =========================
-   REMOTE SEARCH RESULTS
+   REMOTE RESULTS
    ========================= */
 
 async function remoteSelect(
@@ -2051,9 +2777,10 @@ async function remoteSelect(
         `
           <div class="pointResultsEmpty">
             Адрес не найден.
-            Попробуйте написать улицу и номер дома.
+            Попробуйте добавить улицу и номер дома.
           </div>
         `;
+
 
       return;
 
@@ -2063,7 +2790,7 @@ async function remoteSelect(
     results.innerHTML=
       `
         <div class="pointResultsCount">
-          Найдено по OpenStreetMap
+          Найдено по карте
         </div>
       `;
 
@@ -2089,11 +2816,17 @@ async function remoteSelect(
 
 
         const street=
+
           addr.road ||
+
           addr.pedestrian ||
+
           addr.residential ||
+
           addr.living_street ||
+
           addr.square ||
+
           "";
 
 
@@ -2116,7 +2849,9 @@ async function remoteSelect(
 
         }
 
-        else if(street){
+        else if(
+          street
+        ){
 
           shortName=
             street;
@@ -2128,7 +2863,10 @@ async function remoteSelect(
           shortName=
             fullAddress
             .split(",")
-            .slice(0,2)
+            .slice(
+              0,
+              2
+            )
             .join(",")
             .trim();
 
@@ -2257,7 +2995,9 @@ async function remoteSelect(
    SEARCH EVENTS
    ========================= */
 
-function setupPointSearch(kind){
+function setupPointSearch(
+  kind
+){
 
   const input=
     kind==="from"
@@ -2482,7 +3222,9 @@ let currentMapTheme=
   "dark";
 
 
-function activateMapLayer(theme){
+function activateMapLayer(
+  theme
+){
 
   currentMapTheme=
     theme;
@@ -2566,10 +3308,6 @@ activateMapLayer(
    REVERSE GEOCODING
    ========================= */
 
-const reverseCache=
-  new Map();
-
-
 async function reverseGeocodeMoscow(
   lat,
   lng
@@ -2594,6 +3332,7 @@ async function reverseGeocodeMoscow(
 
   const result=
     await queuedNominatimRequest(
+
       async()=>{
 
         const params=
@@ -2630,10 +3369,12 @@ async function reverseGeocodeMoscow(
             params.toString(),
 
             {
+
               headers:{
                 Accept:
                   "application/json"
               }
+
             }
 
           );
@@ -2660,13 +3401,21 @@ async function reverseGeocodeMoscow(
 
 
         const street=
+
           address.road ||
+
           address.pedestrian ||
+
           address.residential ||
+
           address.living_street ||
+
           address.square ||
+
           address.footway ||
+
           address.path ||
+
           "";
 
 
@@ -2689,7 +3438,9 @@ async function reverseGeocodeMoscow(
 
         }
 
-        else if(street){
+        else if(
+          street
+        ){
 
           shortAddress=
             street;
@@ -2712,7 +3463,10 @@ async function reverseGeocodeMoscow(
           shortAddress=
             data.display_name
             .split(",")
-            .slice(0,2)
+            .slice(
+              0,
+              2
+            )
             .join(",")
             .trim();
 
@@ -2738,6 +3492,7 @@ async function reverseGeocodeMoscow(
         };
 
       }
+
     );
 
 
@@ -2753,7 +3508,7 @@ async function reverseGeocodeMoscow(
 
 
 /* =========================
-   CLICK ANYWHERE ON MAP
+   CLICK ON MAP
    ========================= */
 
 let mapClickRequestId=
@@ -2779,11 +3534,6 @@ map.on(
         6
       );
 
-
-    /*
-      Координаты пользователю
-      не показываем.
-    */
 
     toSearch.value=
       "Определяю адрес…";
@@ -2811,12 +3561,6 @@ map.on(
           lng
         );
 
-
-      /*
-        Если пользователь уже
-        нажал в другую точку,
-        старый ответ не используем.
-      */
 
       if(
         requestId!==
@@ -2855,12 +3599,6 @@ map.on(
         MAP_CLICK_DESTINATION_ID;
 
 
-      /*
-        В поле назначения:
-        "Тверская улица, 12"
-        вместо координат.
-      */
-
       toSearch.value=
         address.short;
 
@@ -2869,10 +3607,6 @@ map.on(
         `Точка назначения: ${address.short}`
       );
 
-
-      /*
-        Сразу строим маршрут.
-      */
 
       buildRoute();
 
@@ -2986,7 +3720,9 @@ let pickupRouteRequest=
    HELPERS
    ========================= */
 
-function showToast(t){
+function showToast(
+  t
+){
 
   toast.textContent=
     t;
@@ -3017,7 +3753,9 @@ function showToast(t){
 }
 
 
-function setLoading(v){
+function setLoading(
+  v
+){
 
   loader.classList.toggle(
     "show",
@@ -3033,10 +3771,12 @@ function rand(
 ){
 
   return Math.floor(
+
     Math.random()*
     (
       max-min+1
     )
+
   )+
   min;
 
@@ -3406,11 +4146,14 @@ async function buildRoute(){
 
     const mins=
       Math.max(
+
         1,
+
         Math.round(
           data.routes[0].duration/
           60
         )
+
       );
 
 
@@ -3481,6 +4224,7 @@ async function buildRoute(){
           ],
 
           [
+
             (
               a.lat+
               b.lat
@@ -3494,6 +4238,7 @@ async function buildRoute(){
             )/
             2-
             .01
+
           ],
 
           [
@@ -3659,6 +4404,7 @@ function generateTaxiPrices(
 
   const base=
     Math.round(
+
       (
         170+
         routeKm*
@@ -3666,6 +4412,7 @@ function generateTaxiPrices(
       )*
       mult/
       10
+
     )*
     10;
 
@@ -3704,6 +4451,7 @@ function generateTaxiPrices(
             220,
 
             Math.round(
+
               (
                 base+
                 rand(
@@ -3714,6 +4462,7 @@ function generateTaxiPrices(
                 20
               )/
               10
+
             )*
             10
 
@@ -3882,9 +4631,12 @@ function updateSavings(){
 
   const savings=
     Math.max(
+
       0,
+
       currentLocationFare-
       p.price
+
     );
 
 
@@ -3928,7 +4680,9 @@ async function rebuildRouteFromPickup(
     !pickup ||
     !destination
   ){
+
     return;
+
   }
 
 
@@ -3958,7 +4712,9 @@ async function rebuildRouteFromPickup(
       requestId!==
       pickupRouteRequest
     ){
+
       return;
+
     }
 
 
@@ -4019,11 +4775,14 @@ async function rebuildRouteFromPickup(
 
     const mins=
       Math.max(
+
         1,
+
         Math.round(
           data.routes[0].duration/
           60
         )
+
       );
 
 
@@ -4074,10 +4833,7 @@ async function rebuildRouteFromPickup(
 
   catch(e){
 
-    /*
-      При временной ошибке
-      выбранная точка остаётся.
-    */
+    /* ничего */
 
   }
 
@@ -4103,10 +4859,12 @@ function selectTaxi(
     )=>{
 
       m.setIcon(
+
         taxiIcon(
           taxiData[j],
           j===i
         )
+
       );
 
     }
@@ -4159,7 +4917,9 @@ function drawWalkLine(){
     !origin ||
     !t
   ){
+
     return;
+
   }
 
 
@@ -4314,7 +5074,7 @@ document
 
 
 /* =========================
-   SELECT CHANGE
+   CHANGE
    ========================= */
 
 fromSelect.addEventListener(
@@ -4379,7 +5139,7 @@ document
 
 
 /* =========================
-   BEST PICKUP
+   BEST
    ========================= */
 
 document
@@ -4392,7 +5152,9 @@ document
   if(
     !taxiData.length
   ){
+
     return;
+
   }
 
 
@@ -4432,7 +5194,9 @@ document
 
 
   showToast(
+
     `Выбрано: ₽${taxiData[best.i].price}, ${taxiData[best.i].walk} мин пешком`
+
   );
 
 };
@@ -4452,7 +5216,9 @@ document
   if(
     !taxiData.length
   ){
+
     return;
+
   }
 
 
@@ -4490,7 +5256,9 @@ document
 
 
   showToast(
+
     `Выбрана более выгодная точка: ₽${taxiData[cheapest.i].price}`
+
   );
 
 };
@@ -4662,9 +5430,11 @@ document
   ){
 
     generateTaxiPrices(
+
       POINTS[
         fromSelect.value
       ]
+
     );
 
   }
@@ -4698,7 +5468,9 @@ function applyTheme(
 
   themeBtn.textContent=
     theme==="light"
+
       ?"🌙 Тёмная"
+
       :"☀️ Светлая";
 
 }
@@ -4714,10 +5486,14 @@ themeBtn.addEventListener(
   ()=>{
 
     applyTheme(
+
       currentMapTheme===
       "dark"
+
         ?"light"
+
         :"dark"
+
     );
 
   }
